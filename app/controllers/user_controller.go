@@ -1,0 +1,128 @@
+package controllers
+
+import (
+	"errors"
+	"net/http"
+	"strconv"
+
+	"getting-to-go/app/services"
+	"getting-to-go/app/utils"
+
+	"github.com/gin-gonic/gin"
+)
+
+// UserController provides user-related endpoints
+type UserController struct {
+	userService *services.UserService
+}
+
+// NewUserController creates a new UserController instance
+func NewUserController(userService *services.UserService) *UserController {
+	return &UserController{
+		userService: userService,
+	}
+}
+
+// Register registers the UserController routes with the given Gin engine
+func (c *UserController) Register(router *gin.Engine) {
+	router.POST("/api/users", c.createUser)
+	router.POST("/api/auth", c.authenticate)
+	router.GET("/api/users/:id", c.getUser)
+	router.GET("/api/users", c.getUsers)
+}
+
+func (c *UserController) createUser(ctx *gin.Context) {
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=6"`
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		utils.HandleBadRequest(ctx, err)
+		return
+	}
+
+	user, err := c.userService.CreateUser(req.Username, req.Email, req.Password)
+	if err != nil {
+		utils.HandleAppError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"id":       user.ID,
+		"username": user.Username,
+		"email":    user.Email,
+	})
+}
+
+func (c *UserController) authenticate(ctx *gin.Context) {
+	var req struct {
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=6"`
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		utils.HandleBadRequest(ctx, err)
+		return
+	}
+
+	user, err := c.userService.Authenticate(req.Email, req.Password)
+	if err != nil {
+		utils.HandleAppError(ctx, err)
+		return
+	}
+
+	token, err := utils.GenerateJWT(user.ID)
+	if err != nil {
+		utils.HandleAppError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
+}
+
+func (c *UserController) getUsers(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "1"))
+
+	users, err := c.userService.GetUsers(limit, offset)
+	if err != nil {
+		utils.HandleAppError(ctx, err)
+		return
+	}
+
+	var res []gin.H
+	for _, user := range users {
+		res = append(res, gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *UserController) getUser(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		utils.HandleBadRequest(ctx, errors.New("Invalid user ID"))
+		return
+	}
+
+	user, err := c.userService.GetUser(id)
+
+	if err != nil {
+		utils.HandleAppError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":       user.ID,
+		"username": user.Username,
+		"email":    user.Email,
+	})
+}
