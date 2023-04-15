@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"getting-to-go/app/services"
-	"getting-to-go/app/utils"
+	"getting-to-go/services"
+	"getting-to-go/utils"
 
 	"github.com/gin-gonic/gin"
 )

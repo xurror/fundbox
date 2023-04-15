@@ -1,6 +1,6 @@
 package services
 
-import "getting-to-go/app/models"
+import "getting-to-go/models"
 
 type ContributionService struct{}
 

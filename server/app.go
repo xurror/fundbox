@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"getting-to-go/app/config"
-	"getting-to-go/app/controllers"
-	"getting-to-go/app/models"
-	"getting-to-go/app/services"
+	"getting-to-go/config"
+	"getting-to-go/controllers"
+	"getting-to-go/models"
+	"getting-to-go/services"
 
 	"github.com/gin-gonic/gin"
 )

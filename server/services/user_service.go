@@ -1,8 +1,8 @@
 package services
 
 import (
-	"getting-to-go/app/models"
-	"getting-to-go/app/utils"
+	"getting-to-go/models"
+	"getting-to-go/utils"
 	"net/http"
 )
 

@@ -2,15 +2,15 @@ module getting-to-go
 
 go 1.20
 
-replace getting-to-go/app/utils => ./app/utils
+replace getting-to-go/utils => ./utils
 
-replace getting-to-go/app/models => ./app/models
+replace getting-to-go/models => ./models
 
-replace getting-to-go/app/services => ./app/services
+replace getting-to-go/services => ./services
 
-replace getting-to-go/app/controllers => ./app/controllers
+replace getting-to-go/controllers => ./controllers
 
-replace getting-to-go/app/config => ./app/config
+replace getting-to-go/config => ./config
 
 require (
 	github.com/gin-gonic/gin v1.9.0

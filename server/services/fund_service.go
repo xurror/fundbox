@@ -1,7 +1,7 @@
 package services
 
 import (
-	"getting-to-go/app/models"
+	"getting-to-go/models"
 )
 
 type FundService struct{}

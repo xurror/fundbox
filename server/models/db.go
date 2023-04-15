@@ -3,7 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
-	"getting-to-go/app/utils"
+	"getting-to-go/utils"
 	"net/http"
 	"time"
 
