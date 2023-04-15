@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -24,10 +23,10 @@ func NewUserController(userService *services.UserService) *UserController {
 }
 
 // Register registers the UserController routes with the given Gin engine
-func (c *UserController) Register(router *gin.Engine) {
-	router.POST("/api/users", c.createUser)
-	router.POST("/api/auth", c.authenticate)
-	router.GET("/api/users/:id", c.getUser)
+func (c *UserController) Register(router *gin.RouterGroup) {
+	router.POST("/auth", c.authenticate)
+	router.POST("/users", c.createUser)
+	router.GET("/users/:id", c.getUser)
 	router.GET("/api/users", c.getUsers)
 }
 
@@ -107,12 +106,7 @@ func (c *UserController) getUsers(ctx *gin.Context) {
 }
 
 func (c *UserController) getUser(ctx *gin.Context) {
-	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
-	if err != nil {
-		utils.HandleBadRequest(ctx, errors.New("Invalid user ID"))
-		return
-	}
-
+	id := ctx.Param("id")
 	user, err := c.userService.GetUser(id)
 
 	if err != nil {

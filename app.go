@@ -26,12 +26,27 @@ func main() {
 
 	models.RunMigrations()
 
-	router := gin.Default()
-
 	userService := services.NewUserService()
 	userController := controllers.NewUserController(userService)
 
-	userController.Register(router)
+	fundService := services.NewFundService()
+	fundController := controllers.NewFundController(fundService)
+
+	contributionService := services.NewContributionService()
+	contributionController := controllers.NewContributionController(contributionService)
+
+	contributorService := services.NewContributorService()
+	contributorController := controllers.NewContributorController(contributorService)
+
+	router := gin.Default()
+
+	api := router.Group("/api")
+	apiV1 := api.Group("/v1")
+
+	userController.Register(apiV1)
+	fundController.Register(apiV1)
+	contributionController.Register(apiV1)
+	contributorController.Register(apiV1)
 
 	router.Run(fmt.Sprintf(":%s", config.Server.Port))
 }

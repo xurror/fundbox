@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 type AppError struct {
@@ -17,10 +18,6 @@ type AppError struct {
 
 func (e *AppError) Error() string {
 	return e.Message
-}
-
-func CheckPasswordHash(password string, userPassword string) bool {
-	return true
 }
 
 func NewError(code int, message string) *AppError {
@@ -51,7 +48,11 @@ func HandleAppError(ctx *gin.Context, err error) {
 	}
 }
 
-func GenerateJWT(userId uint) (string, error) {
+func CheckPasswordHash(password string, userPassword string) bool {
+	return true
+}
+
+func GenerateJWT(userId uuid.UUID) (string, error) {
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  userId,
@@ -59,4 +60,19 @@ func GenerateJWT(userId uint) (string, error) {
 		"eat": time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
 	})
 	return token.SignedString("privateKey")
+}
+
+func GetPageLimiAndOffset(ctx *gin.Context) (int, int) {
+	limit, err := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	if err != nil {
+		HandleBadRequest(ctx, err)
+		panic(err)
+	}
+
+	offset, err := strconv.Atoi(ctx.DefaultQuery("offset", "1"))
+	if err != nil {
+		HandleBadRequest(ctx, err)
+		panic(err)
+	}
+	return limit, offset
 }

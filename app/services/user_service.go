@@ -24,7 +24,7 @@ func (s *UserService) CreateUser(username, email, password string) (*models.User
 }
 
 // GetUser retrieves a user by ID
-func (s *UserService) GetUser(id int64) (*models.User, error) {
+func (s *UserService) GetUser(id string) (*models.User, error) {
 	return models.GetUser(id)
 }
 
