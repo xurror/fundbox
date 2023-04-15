@@ -5,14 +5,32 @@ import (
 	"fmt"
 	"getting-to-go/app/utils"
 	"net/http"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
 var db *gorm.DB
+
+type Persistable struct {
+	ID uuid.UUID `json:"id" gorm:"primary_key;type:uuid"`
+}
+
+type Auditable struct {
+	Persistable
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+}
+
+func (entity *Persistable) BeforeCreate(tx *gorm.DB) (err error) {
+	entity.ID = uuid.New()
+	return
+}
 
 // Connect initializes the database connection
 func Connect(host, port, user, password, dbname string) error {
@@ -31,10 +49,17 @@ func Connect(host, port, user, password, dbname string) error {
 
 // Run Migration
 func RunMigrations() {
-	db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{}, &Fund{}, &Contributor{}, &Currency{}, &Amount{}, &Contribution{})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to migrate database: %v", err))
+	}
 }
 
 func HandleError(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return utils.NewError(http.StatusNotFound, "Record not found")
 	}

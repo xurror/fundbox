@@ -1,12 +1,8 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 // User represents a user in the system
 type User struct {
-	gorm.Model
+	Auditable
 	Username string `json:"username" gorm:"unique;not null"`
 	Email    string `json:"email" gorm:"unique;not null"`
 	Password string `json:"password,omitempty" gorm:"column:password_hash;not null"`
@@ -26,7 +22,7 @@ func GetUsers(limit, offset int) ([]*User, error) {
 }
 
 // GetUser retrieves a user by ID
-func GetUser(id int64) (*User, error) {
+func GetUser(id string) (*User, error) {
 	user := &User{}
 	result := db.First(&user, id)
 	return user, HandleError(result.Error)
