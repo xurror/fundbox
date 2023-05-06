@@ -5,8 +5,44 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import Steps from '../components/Steps'
+import { ChangeEvent, useState } from 'react';
+
+const steps = [
+  {
+    label: 'Create a fund and start collecting',
+    description: `For each ad campaign that you create, you can control how much
+              you're willing to spend on clicks and conversions, which networks
+              and geographical locations you want your ads to show on, and more.`,
+  },
+  {
+    label: 'Copy link and share to recieving money in this fund',
+    description:
+      'An ad group contains one or more ads which target a shared set of keywords.',
+  }
+];
 
 export default function Home() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [fundName, setFundName] = useState('');
+  const [link, setLink] = useState('');
+
+  const goNextStep = () => {
+    if (currentStep === steps.length - 1) return;
+    setCurrentStep(currentStep + 1)
+  }
+
+  const goBackStep = () => {
+    if (currentStep === 0) return;
+    setCurrentStep(currentStep - 1)
+  }
+
+  const setName = (e: ChangeEvent<HTMLInputElement>) => {
+    setFundName(e.target.value);
+    const parsedName = e.target.value.replace(/[^A-Z0-9]+/ig, "_");
+    const copyLink = `${window.location.href}funds/${parsedName}`
+    setLink(copyLink)
+  }
+
   return (
     <div className="h-screen min-h-screen flex flex-col justify-center items-center px-[200px] py-16 bg-primary-light">
       <Head>
@@ -23,10 +59,27 @@ export default function Home() {
 
         <div className='flex flex-1'>
           <div className='w-1/3 border-r border-basic-500 px-5 py-10'>
-            <Steps />
+            <Steps steps={steps} currentStep={currentStep} />
           </div>
-          <div className='w-2/3 p-10'>
-            inputs
+          <div className='w-2/3 p-10 flex flex-col'>
+            <div className='flex-1'>
+              <div>
+                <div className='text-md text-basic-600 font-medium pb-2'>Fund Name</div>
+                {currentStep === 0 ? (
+                  <input value={fundName} onChange={setName} disabled={currentStep !== 0} className='h-10 px-3 border text-basic-600 w-full rounded-md border-basic-500 bg-basic-200' type="text" />
+                ) : (
+                  <div className='flex items-center border rounded-md h-10 pl-3 border-basic-500'>
+                    <div className='flex-1 text-basic-600 text-sm'>{link}</div>
+                    <button className='border-l border-basic-500 h-full px-3 flex items-center justify-center hover:bg-primary-light rounded-r-[0.3rem]'>copy</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className='flex justify-between items-center'>
+              <button onClick={() => goBackStep()} disabled={currentStep === 0} className='border rounded-md h-9 border-basic-500 w-28 hover:border-primary text-basic-600 transition duration-200 delay-75 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-basic-500'>Back</button>
+              <button onClick={() => goNextStep()} disabled={currentStep === steps.length-1} className='bg-primary border rounded-md h-9 border-primary w-28 hover:bg-primary-light hover:text-dark-100 text-basic-100 transition duration-200 delay-75 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary disabled:hover:text-basic-100'>Next</button>
+            </div>
           </div>
         </div>
       </main>

@@ -9,6 +9,11 @@ import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/Share';
 import VideoLabelIcon from '@mui/icons-material/VideoLabel';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import StepContent from '@mui/material/StepContent';
+import Box from '@mui/material/Box';
+import { FC, useEffect, useState } from 'react';
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -75,20 +80,52 @@ function ColorlibStepIcon(props: any) {
   );
 }
 
-const steps = ['Create a fund and start collecting', 'Copy link and share to recieving money in this fund'];
+interface step {
+  label: string,
+  description: string
+}
 
-export default function Steps() {
+const Steps:FC<{steps: step[], currentStep: number}>= ({ steps, currentStep}) =>  {
+  const [activeStep, setActiveStep] = useState(currentStep)
+
+  useEffect(() => {
+    setActiveStep(currentStep)
+  }, [currentStep])
+  
   return (
     <Stack sx={{ width: '100%' }}>
-      <Stepper activeStep={0} orientation="vertical" connector={<ColorlibConnector />}>
-        {steps.map((label) => (
-          <Step key={label}>
+      <Stepper activeStep={activeStep} orientation="vertical" connector={<ColorlibConnector />}>
+        {steps.map((step, index) => (
+          <Step key={step.label}>
             <StepLabel StepIconComponent={ColorlibStepIcon} className='p-0'>
-              <div className='text-dark-100 text-sm'>{label}</div>
+              <div className='text-dark-100 text-sm'>{step.label}</div>
             </StepLabel>
+            {/* <StepContent>
+              <Typography>{step.description}</Typography>
+              <Box sx={{ mb: 2 }}>
+                <div>
+                  <Button
+                    variant="contained"
+                    // onClick={handleNext}
+                    sx={{ mt: 1, mr: 1 }}
+                  >
+                    {index === steps.length - 1 ? 'Finish' : 'Continue'}
+                  </Button>
+                  <Button
+                    disabled={index === 0}
+                    // onClick={handleBack}
+                    sx={{ mt: 1, mr: 1 }}
+                  >
+                    Back
+                  </Button>
+                </div>
+              </Box>
+            </StepContent> */}
           </Step>
         ))}
       </Stepper>
     </Stack>
   );
 }
+
+export default Steps;
