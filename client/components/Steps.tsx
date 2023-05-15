@@ -65,24 +65,10 @@ const ColorlibStepIconRoot = styled('div')(({ theme, ownerState }) => ({
   }),
 }));
 
-function ColorlibStepIcon(props: any) {
-  const { active, completed, className } = props;
-
-  const icons = {
-    1: <AddIcon />,
-    2: <ShareIcon />,
-  };
-
-  return (
-    <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
-      {icons[String(props.icon)]}
-    </ColorlibStepIconRoot>
-  );
-}
-
 interface step {
   label: string,
-  description: string
+  description: string,
+  icon: any
 }
 
 const Steps:FC<{steps: step[], currentStep: number}>= ({ steps, currentStep}) =>  {
@@ -91,6 +77,17 @@ const Steps:FC<{steps: step[], currentStep: number}>= ({ steps, currentStep}) =>
   useEffect(() => {
     setActiveStep(currentStep)
   }, [currentStep])
+  
+
+  function ColorlibStepIcon(props: any) {
+    const { active, completed, className } = props;
+  
+    return (
+      <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+        {steps[props.icon -1].icon}
+      </ColorlibStepIconRoot>
+    );
+  }
   
   return (
     <Stack sx={{ width: '100%' }}>

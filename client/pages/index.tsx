@@ -3,26 +3,59 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import AddIcon from '@mui/icons-material/Add';
+import PaymentsIcon from '@mui/icons-material/PaymentsOutlined';
+import DoneIcon from '@mui/icons-material/DoneAllOutlined';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
 
 import Steps from '../components/Steps'
 import { ChangeEvent, useState } from 'react';
 
 const steps = [
+  // {
+  //   label: 'Create a fund and start collecting',
+  //   description: `For each ad campaign that you create, you can control how much
+  //             you're willing to spend on clicks and conversions, which networks
+  //             and geographical locations you want your ads to show on, and more.`,
+  //   icon: <AddIcon />,
+
+  // },
+  // {
+  //   label: 'Copy link and share to recieving money in this fund',
+  //   description:
+  //     'An ad group contains one or more ads which target a shared set of keywords.',
+  //   icon: <ShareIcon />
+  // }
   {
-    label: 'Create a fund and start collecting',
-    description: `For each ad campaign that you create, you can control how much
-              you're willing to spend on clicks and conversions, which networks
-              and geographical locations you want your ads to show on, and more.`,
+    label: 'Add your name',
+    description: ``,
+    icon: <AddIcon />,
+
   },
   {
-    label: 'Copy link and share to recieving money in this fund',
-    description:
-      'An ad group contains one or more ads which target a shared set of keywords.',
+    label: 'Pay using one of the following methods',
+    description: '',
+    icon: <PaymentsIcon />
+  },
+  {
+    label: 'Make Payment',
+    description: '',
+    icon: <PaymentsIcon />
+  },
+  {
+    label: 'Completed',
+    description: '',
+    icon: <DoneIcon />
   }
 ];
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('');
+
   const [fundName, setFundName] = useState('');
   const [link, setLink] = useState('');
 
@@ -43,6 +76,10 @@ export default function Home() {
     setLink(copyLink)
   }
 
+  const handlePaymentSelect = (value: any) => {
+    setPaymentMethod(value);
+  };
+
   return (
     <div className="h-screen min-h-screen flex flex-col justify-center items-center px-[200px] py-16 bg-primary-light">
       <Head>
@@ -51,7 +88,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col flex-1 bg-basic-200 w-full rounded-3xl shadow-md shadow px-20">
+      {/* <main className="flex flex-col flex-1 bg-basic-200 w-full rounded-3xl shadow-md shadow px-20">
         <div className='py-14 border-b border-basic-500'>
           <h1 className="text-4xl font-bold text-secondary-dark">Create a Fund</h1>
           <p className="text-md text-basic-600 pt-1">Create a fund, copy and share the link with your friends!</p>
@@ -66,7 +103,7 @@ export default function Home() {
               <div>
                 <div className='text-md text-basic-600 font-medium pb-2'>Fund Name</div>
                 {currentStep === 0 ? (
-                  <input value={fundName} onChange={setName} disabled={currentStep !== 0} className='h-10 px-3 border text-basic-600 w-full rounded-md border-basic-500 bg-basic-200' type="text" />
+                  <input value={fundName} onChange={setName} disabled={currentStep !== 0} className='h-14 px-3 border text-basic-600 w-full rounded-md border-basic-500 bg-basic-200' type="text" />
                 ) : (
                   <div className='flex items-center border rounded-md h-10 pl-3 border-basic-500'>
                     <div className='flex-1 text-basic-600 text-sm'>{link}</div>
@@ -74,6 +111,67 @@ export default function Home() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className='flex justify-between items-center'>
+              <button onClick={() => goBackStep()} disabled={currentStep === 0} className='border rounded-md h-9 border-basic-500 w-28 hover:border-primary text-basic-600 transition duration-200 delay-75 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-basic-500'>Back</button>
+              <button onClick={() => goNextStep()} disabled={currentStep === steps.length-1} className='bg-primary border rounded-md h-9 border-primary w-28 hover:bg-primary-light hover:text-dark-100 text-basic-100 transition duration-200 delay-75 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary disabled:hover:text-basic-100'>Next</button>
+            </div>
+          </div>
+        </div>
+      </main> */}
+      <main className="flex flex-col flex-1 bg-basic-200 w-full rounded-3xl shadow-md shadow px-20">
+        <div className='py-14 border-b border-basic-500'>
+          <h1 className="text-4xl">Fund for <span className='font-bold text-secondary-dark'>xurror</span></h1>
+          <p className="text-md text-basic-600 pt-1">Contribute to this fund by completing the form with your information</p>
+        </div>
+
+        <div className='flex flex-1'>
+          <div className='w-1/3 border-r border-basic-500 px-5 py-10'>
+            <Steps steps={steps} currentStep={currentStep} />
+          </div>
+          <div className='w-2/3 p-10 flex flex-col'>
+            <div className='flex-1'>
+              {currentStep === 0 && (
+                <div>
+                  <div className='text-md text-basic-600 font-medium pb-2'>Name</div>
+                  <input value={fundName} onChange={setName} className='h-14 px-3 border text-basic-600 w-full rounded-md border-basic-500 bg-basic-200' type="text" />
+                  {/* {currentStep === 0 ? (
+                  ) : (
+                    <div className='flex items-center border rounded-md h-10 pl-3 border-basic-500'>
+                      <div className='flex-1 text-basic-600 text-sm'>{link}</div>
+                      <button className='border-l border-basic-500 h-full px-3 flex items-center justify-center hover:bg-primary-light rounded-r-[0.3rem]'>copy</button>
+                    </div>
+                  )} */}
+                </div>
+              )}
+              {currentStep === 1 && (
+                <div>
+                  <div className='text-md text-basic-600 font-medium pb-8'>Payment Methods</div>
+                  <div className=''>
+                    <div className='flex mb-4'>
+                      <button className='flex flex-1 items-center border rounded-md shadow shadow-primary-light h-28 pl-3 border-basic-500' onClick={() => handlePaymentSelect('momo')}>MOMO</button>
+                      <Radio
+                        checked={paymentMethod === 'momo'}
+                        onChange={(e) => handlePaymentSelect(e.target.value)}
+                        value="momo"
+                        name="radio-buttons"
+                        inputProps={{ 'aria-label': 'MOMO' }}
+                      />
+                    </div>
+                    <div className='flex mb-4'>
+                      <button className='flex flex-1 items-center border rounded-md shadow shadow-primary-light h-28 pl-3 border-basic-500' onClick={() => handlePaymentSelect('om')}>OM</button>
+                      <Radio
+                        checked={paymentMethod === 'om'}
+                        onChange={(e) => handlePaymentSelect(e.target.value)}
+                        value="om"
+                        name="radio-buttons"
+                        inputProps={{ 'aria-label': 'OM' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className='flex justify-between items-center'>
