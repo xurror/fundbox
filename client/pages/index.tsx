@@ -10,9 +10,32 @@ import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/PersonOutlined';
 import LoginIcon from '@mui/icons-material/Login';
 import Link from 'next/link';
+import Popover, {popoverClasses} from '@mui/material/Popover';
+import { styled } from '@mui/material/styles';
+
+const StyledPopover = styled(Popover)(({ theme }) => ({
+  [`&.${popoverClasses.paper}`]: {
+    backgroundColor: 'red',
+    borderRadius: 14,
+  },
+}));
 
 export default function App() {
   const [auth, setAuth] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("clicked")
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -32,9 +55,32 @@ export default function App() {
           />
           {auth && (
             <div className='ml-auto mr-6'>
-              <button className='flex items-center justify-center bg-blue-10 h-10 w-10 rounded-full'>
+              <button aria-describedby={id} onClick={handleClick} className='flex items-center justify-center bg-blue-10 h-10 w-10 rounded-full'>
                 <PersonIcon className='text-blue-100 w-7 h-7' />
               </button>
+              <StyledPopover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <div className='py-2'>
+                  <Link href='/funds'>
+                    <button className='w-48  text-blue-100 font-semibold h-10'>
+                      View Funds
+                    </button>
+                  </Link>
+
+                </div>
+              </StyledPopover>
             </div>
           )}
         </div>
@@ -49,7 +95,7 @@ export default function App() {
                 <p className='text-white-80 text-center leading-6 text-sm tracking-[-0.3px] px-1'>Login to track fund progress, see contributors and other information.</p>
 
                 <div className='flex flex-1 justify-center items-end'>
-                  <button className='flex justify-center items-center'>
+                  <button onClick={() => setAuth(true)} className='flex justify-center items-center'>
                     <div className='flex items-center justify-center bg-white-10 h-14 w-14 rounded-full mr-2'>
                       <LoginIcon className='text-white w-6 h-6' />
                     </div>
