@@ -27,8 +27,8 @@ module.exports = {
       'warning': '#EDE323',
       'info': '#FF433D',
 
-      'blue-100': '#0047FF',
-      'blue-10': '#0047FF1A',
+      'blue-100': '#4C51C6',
+      'blue-10': '#4C51C61A',
       'dark_blue-100': '#12033A',
       'dark_blue-80': '#12033ACC',
       'dark_blue-60': '#04041599',

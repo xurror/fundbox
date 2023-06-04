@@ -1,7 +1,9 @@
-import React, { ChangeEvent, RefObject, useRef, useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 import Head from 'next/head'
 import LinearProgress from '@mui/material/LinearProgress';
 import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
+import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
 
 export default function Add() {
   const [form, setForm] = useState({
@@ -11,8 +13,6 @@ export default function Add() {
   });
   const [link, setLink] = useState('');
   const [progress, setProgress] = useState(20);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const descriptionInputRef = useRef<HTMLInputElement>(null);
 
   const create = () => {
     const name = form.name;
@@ -31,7 +31,7 @@ export default function Add() {
     }
   }
 
-  const updateForm = (value: ChangeEvent<HTMLInputElement>, field: string) => {
+  const updateForm = (value: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
     if (field === 'name') setProgress(35)
     if (field === 'description') setProgress(50)
     let _form: any = {...form}
@@ -63,33 +63,33 @@ export default function Add() {
           </div>
 
           <div className='w-full p-6 mt-6 mx-6'>
-            <div onClick={() => nameInputRef.current?.focus()} className={`border border-dark_blue-40 flex flex-col justify-center rounded-2xl py-2 px-5 mb-4 h-16 ${form.disabled && 'border-grey_disabled'}`}>
-              <span className={`text-dark_blue-60 font-medium text-lg tracking-[-0.3px] ${form.disabled && 'text-grey_disabled'}`}>Name</span>
-              <input ref={nameInputRef} type="text" placeholder='fund name'
-                className='text-sm transition placeholder:text-grey_sub_text focus:outline-none disabled:text-grey_disabled disabled:placeholder:text-grey_disabled'
-                value={form.name}
-                disabled={form.disabled}
+            <FormControl className='mt-4' fullWidth>
+              <TextField 
+                id="outlined-basic" 
+                label="Name"
+                variant="outlined"
+                type='text'
                 onChange={(e) => updateForm(e, 'name')}
-              />
-            </div>
-
-            <div onClick={() => descriptionInputRef.current?.focus()} 
-              className={`border border-dark_blue-40 flex flex-col rounded-2xl py-2 px-5 ${form.disabled && 'border-grey_disabled'}`}
-            >
-              <span className={`text-dark_blue-60 font-medium text-lg tracking-[-0.3px] ${form.disabled && 'text-grey_disabled'}`}>Description</span>
-              <input ref={descriptionInputRef} type="text" placeholder='fund description'
-                className='text-sm transition placeholder:text-grey_sub_text focus:outline-none disabled:text-grey_disabled disabled:placeholder:text-grey_disabled'
-                value={form.description}
                 disabled={form.disabled}
-                onChange={(e) => updateForm(e, 'description')}
               />
-            </div>
+            </FormControl>
+
+            <FormControl className='mt-4' fullWidth>
+              <TextField 
+                id="outlined-basic" 
+                label="Description"
+                variant="outlined"
+                type='text'
+                onChange={(e) => updateForm(e, 'description')}
+                disabled={form.disabled}
+              />
+            </FormControl>
 
             {link && (
               <div className='bg-light-100 h-28 rounded-3xl mt-5 p-4 flex items-center'>
                 <div className='mr-2 flex-1'>
-                  <h4 className='text-dark_blue-100 text-base break-all'>Copy and share link with contributors!</h4>
-                  <p className='text-grey_sub_text break-all'>{link}</p>
+                  <h4 className='text-dark_blue-100 font-medium text-[15px] break-all'>Copy and share link with contributors!</h4>
+                  <p className='text-grey_sub_text break-all text-[15px]'>{link}</p>
                 </div>
                 <button onClick={() => copyToClipboard()} className=''>
                   <CopyAllIcon className='text-dark_blue-100' />
