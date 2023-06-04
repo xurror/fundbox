@@ -17,7 +17,7 @@ export default function Add() {
   const create = () => {
     const name = form.name;
     const parsedName = name.toLowerCase().replace(/[^A-Z0-9]+/ig, "_");
-    const copyLink = `${window.location.href}funds/${parsedName}`
+    const copyLink = `${window.location.href}${parsedName}/fund`
     setLink(copyLink);
 
     let _form: any = {...form}
