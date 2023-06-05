@@ -9,6 +9,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/PersonOutlined';
 import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ViewIcon from '@mui/icons-material/FolderOpenOutlined';
 import Link from 'next/link';
 import Popover, {popoverClasses} from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
@@ -72,13 +74,15 @@ export default function App() {
                   horizontal: 'right',
                 }}
               >
-                <div className='py-2'>
-                  <Link href='/funds'>
-                    <button className='w-48  text-blue-100 font-semibold h-10'>
-                      View Funds
-                    </button>
-                  </Link>
-
+                <div className='py-2 w-48'>
+                  <button className='w-full text-start px-4 text-blue-100 font-semibold h-10 flex items-center border-b border-dark_blue-20'>
+                    <Link href='/funds'>
+                      <ViewIcon className='text-blue-100 w-5 h-5 mr-3' /><span>View Funds</span>
+                    </Link>
+                  </button>
+                  <button className='w-full text-start px-4 text-blue-100 font-semibold h-10 flex items-center'>
+                    <LogoutIcon className='text-blue-100 w-5 h-5 mr-3' /><span>Log out</span>
+                  </button>
                 </div>
               </StyledPopover>
             </div>

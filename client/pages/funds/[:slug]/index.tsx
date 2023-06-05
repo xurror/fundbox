@@ -101,7 +101,9 @@ export const FundDetails = () => {
         </div>
 
         <div className='m-5'>
-          <button className='w-full bg-blue-100 text-white font-semibold h-14 rounded-3xl'>Mark as Complete</button>
+          <button className='bg-blue-100 w-full h-14 rounded-2xl text-white font-medium leading-6 tracking-[-0.3px] disabled:opacity-50'>
+            Mark as Complete
+          </button>
         </div>
       </main>
     </div>
