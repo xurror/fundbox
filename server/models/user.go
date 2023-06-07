@@ -3,9 +3,12 @@ package models
 // User represents a user in the system
 type User struct {
 	Auditable
-	Username string `json:"username" gorm:"unique;not null"`
-	Email    string `json:"email" gorm:"unique;not null"`
-	Password string `json:"password,omitempty" gorm:"column:password_hash;not null"`
+	FirstName     string         `json:"first_name" gorm:"not null"`
+	LastName      string         `json:"last_name" gorm:"not null"`
+	Email         string         `json:"email" gorm:"unique;not null"`
+	Password      string         `json:"password,omitempty" gorm:"column:password_hash;not null"`
+	Roles         []string       `json:"roles" gorm:"not null;type:varchar(128)[]"`
+	Contributions []Contribution `json:"-" gorm:"-"`
 }
 
 // CreateUser creates a new user in the database
@@ -16,7 +19,7 @@ func CreateUser(user *User) (*User, error) {
 
 // GetUsers retrieves a list of users
 func GetUsers(limit, offset int) ([]*User, error) {
-	users := []*User{}
+	var users []*User
 	result := db.Limit(limit).Find(&users)
 	return users, HandleError(result.Error)
 }
@@ -33,4 +36,10 @@ func GetUserByEmail(email string) (*User, error) {
 	user := &User{}
 	result := db.First(&user, "email = ?", email)
 	return user, HandleError(result.Error)
+}
+
+func GetUserContributions(userID string, limit, offset int) ([]*Contribution, error) {
+	var contributions []*Contribution
+	result := db.Limit(limit).Find(&contributions, "contributor_id = ?", userID)
+	return contributions, HandleError(result.Error)
 }

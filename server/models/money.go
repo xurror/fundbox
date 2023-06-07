@@ -1,5 +1,7 @@
 package models
 
+import "github.com/google/uuid"
+
 type Currency struct {
 	Persistable
 	Name string `json:"name" gorm:"unique;not null"`
@@ -7,9 +9,9 @@ type Currency struct {
 
 type Amount struct {
 	Persistable
-	Value      float64  `json:"value" gorm:"type:decimal;default:0.0"`
-	CurrencyID string   `json:"-" gorm:"not null"`
-	Currency   Currency `json:"currency"`
+	Value      float64   `json:"value" gorm:"type:decimal;default:0.0"`
+	CurrencyID uuid.UUID `json:"-" gorm:"not null"`
+	Currency   Currency  `json:"currency"`
 }
 
 func GetCurrency(name string) (*Currency, error) {

@@ -19,13 +19,13 @@ func GetFund(id string) (*Fund, error) {
 }
 
 func GetFunds(limit, offset int) ([]*Fund, error) {
-	funds := []*Fund{}
+	var funds []*Fund
 	result := db.Limit(limit).Find(&funds)
 	return funds, HandleError(result.Error)
 }
 
 func GetFundContributions(fundID string, limit, offset int) ([]*Contribution, error) {
-	contributions := []*Contribution{}
+	var contributions []*Contribution
 	result := db.Limit(limit).Find(&contributions, "fund_id = ?", fundID)
 	return contributions, HandleError(result.Error)
 }

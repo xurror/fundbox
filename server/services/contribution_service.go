@@ -1,6 +1,9 @@
 package services
 
-import "getting-to-go/models"
+import (
+	"getting-to-go/models"
+	"github.com/google/uuid"
+)
 
 type ContributionService struct{}
 
@@ -8,7 +11,7 @@ func NewContributionService() *ContributionService {
 	return &ContributionService{}
 }
 
-func (s *ContributionService) CreateContribution(fundID, contributorID string, amount float64, currencyID string) (*models.Contribution, error) {
+func (s *ContributionService) CreateContribution(fundID, contributorID uuid.UUID, amount float64, currencyID uuid.UUID) (*models.Contribution, error) {
 	contribution := &models.Contribution{
 		FundID:        fundID,
 		ContributorID: contributorID,

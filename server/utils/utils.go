@@ -52,10 +52,10 @@ func CheckPasswordHash(password string, userPassword string) bool {
 	return true
 }
 
-func GenerateJWT(userId uuid.UUID) (string, error) {
+func GenerateJWT(userID uuid.UUID) (string, error) {
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  userId,
+		"id":  userID,
 		"iat": time.Now().Unix(),
 		"eat": time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
 	})

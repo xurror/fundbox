@@ -39,10 +39,10 @@ func (c *ContributionController) createContribution(ctx *gin.Context) {
 	}
 
 	contribution, err := c.contributionService.CreateContribution(
-		req.FundID.String(),
-		req.ContributorID.String(),
+		req.FundID,
+		req.ContributorID,
 		req.Amount,
-		req.CurrencyID.String(),
+		req.CurrencyID,
 	)
 	if err != nil {
 		utils.HandleAppError(ctx, err)

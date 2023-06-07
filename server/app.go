@@ -14,7 +14,7 @@ import (
 func main() {
 	fmt.Println("Hello, world!")
 
-	config, err := config.LoadConfig("app/config/config.yaml")
+	config, err := config.LoadConfig("./config/config.yaml")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -35,9 +35,6 @@ func main() {
 	contributionService := services.NewContributionService()
 	contributionController := controllers.NewContributionController(contributionService)
 
-	contributorService := services.NewContributorService()
-	contributorController := controllers.NewContributorController(contributorService)
-
 	router := gin.Default()
 
 	api := router.Group("/api")
@@ -46,7 +43,6 @@ func main() {
 	userController.Register(apiV1)
 	fundController.Register(apiV1)
 	contributionController.Register(apiV1)
-	contributorController.Register(apiV1)
 
 	router.Run(fmt.Sprintf(":%s", config.Server.Port))
 }

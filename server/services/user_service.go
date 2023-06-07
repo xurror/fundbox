@@ -15,11 +15,13 @@ func NewUserService() *UserService {
 }
 
 // CreateUser creates a new user
-func (s *UserService) CreateUser(username, email, password string) (*models.User, error) {
+func (s *UserService) CreateUser(firstName, lastName, email, password string) (*models.User, error) {
 	return models.CreateUser(&models.User{
-		Username: username,
-		Email:    email,
-		Password: password,
+		FirstName: firstName,
+		LastName:  lastName,
+		Email:     email,
+		Password:  password,
+		Roles:     []string{"INITIATOR"},
 	})
 }
 

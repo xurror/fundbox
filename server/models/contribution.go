@@ -1,15 +1,18 @@
 package models
 
-import "gorm.io/gorm/clause"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm/clause"
+)
 
 type Contribution struct {
 	Auditable
-	AmountID      string      `json:"-" gorm:"not null"`
-	Amount        Amount      `json:"amount"`
-	FundID        string      `json:"-" gorm:"not null"`
-	Fund          Fund        `json:"fund"`
-	ContributorID string      `json:"-" gorm:"not null"`
-	Contributor   Contributor `json:"contributor"`
+	AmountID      uuid.UUID `json:"-" gorm:"not null;type:uuid"`
+	Amount        Amount    `json:"amount"`
+	FundID        uuid.UUID `json:"-" gorm:"not null;type:uuid"`
+	Fund          Fund      `json:"fund"`
+	ContributorID uuid.UUID `json:"-" gorm:"not null;type:uuid"`
+	Contributor   User      `json:"contributor" gorm:"foreignKey:ContributorID;references:ID"`
 }
 
 func CreateContribution(contribution *Contribution) (*Contribution, error) {
