@@ -1,5 +1,12 @@
 package models
 
+type Role string
+
+const (
+	Initiator   Role = "INITIATOR"
+	Contributor      = "CONTRIBUTOR"
+)
+
 // User represents a user in the system
 type User struct {
 	Auditable
@@ -7,7 +14,7 @@ type User struct {
 	LastName      string         `json:"last_name" gorm:"not null"`
 	Email         string         `json:"email" gorm:"unique;not null"`
 	Password      string         `json:"password,omitempty" gorm:"column:password_hash;not null"`
-	Roles         []string       `json:"roles" gorm:"not null;type:varchar(128)[]"`
+	Roles         []Role         `json:"roles" gorm:"not null;type:varchar(128)[]"`
 	Contributions []Contribution `json:"-" gorm:"-"`
 }
 

@@ -1,0 +1,8 @@
+type Query {
+    funds: [Fund!]!
+    fund(id: UUID!): Fund!
+    fundContributions(fund_id: UUID): [Contribution!]!
+    users: [User!]!
+    user(id: UUID!): User!
+    userContributions(user_id: UUID): [Contribution!]!
+}

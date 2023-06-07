@@ -1,0 +1,36 @@
+scalar UUID
+
+type Currency {
+  id: UUID!
+  name: String!
+}
+
+enum Role {
+  INITIATOR,
+  CONTRIBUTOR
+}
+
+type Fund {
+  id: UUID!
+  reason: String!
+  description: String,
+}
+
+type Contribution {
+  id: UUID!
+  amount: Amount!
+  contributor: User!
+}
+
+type Amount {
+  value: Float!
+  currency: Currency!
+}
+
+type User {
+  id: UUID!
+  first_name: String!
+  last_name: String!
+  email: String!
+  roles: [Role!]!
+}
