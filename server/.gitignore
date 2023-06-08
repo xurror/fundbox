@@ -1,2 +1,3 @@
 .idea
 graph/generated.go
+config/config.yaml
