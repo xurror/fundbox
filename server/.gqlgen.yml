@@ -73,10 +73,10 @@ autobind:
 models:
   ID:
     model:
-      - getting-to-go/models.ID
+      - getting-to-go/models.UUID
   UUID:
     model:
-      - getting-to-go/models.ID
+      - getting-to-go/models.UUID
 #  Role:
 #    model:
 #      - getting-to-go/models.Role
