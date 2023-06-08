@@ -24,7 +24,7 @@ resolver:
   package: resolvers
   filename_template: "{name}.resolvers.go"
   # Optional: turn on to not generate template comments above resolvers
-  # omit_template_comment: false
+#omit_template_comment: false
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
 struct_tag: json
@@ -33,7 +33,7 @@ struct_tag: json
 # omit_slice_element_pointers: false
 
 # Optional: turn on to skip generation of ComplexityRoot struct content and Complexity function
-omit_complexity: false
+#omit_complexity: false
 
 # Optional: turn on to not generate any file notice comments in generated files
 # omit_gqlgen_file_notice: false
@@ -52,7 +52,7 @@ omit_complexity: false
 # return_pointers_in_unmarshalinput: false
 
 # Optional: wrap nullable input fields with Omittable
-# nullable_input_omittable: true
+nullable_input_omittable: true
 
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
@@ -71,25 +71,12 @@ autobind:
 # modelgen, the others will be allowed when binding to fields. Configure them to
 # your liking
 models:
-  UUIDScalar:
-    model: github.com/google/uuid.UUID
-  User:
-    model: getting-to-go/models.User
-  Fund:
-    model: getting-to-go/models.Fund
-  Contribution:
-    model: getting-to-go/models.Contribution
-#  UUID:
-#    model:
-#      - github.com/google/uuid.UUID
   ID:
     model:
-      - github.com/99designs/gqlgen/graphql.ID
-      - github.com/99designs/gqlgen/graphql.Int
-      - github.com/99designs/gqlgen/graphql.Int64
-      - github.com/99designs/gqlgen/graphql.Int32
-  Int:
+      - getting-to-go/models.ID
+  UUID:
     model:
-      - github.com/99designs/gqlgen/graphql.Int
-      - github.com/99designs/gqlgen/graphql.Int64
-      - github.com/99designs/gqlgen/graphql.Int32
+      - getting-to-go/models.ID
+#  Role:
+#    model:
+#      - getting-to-go/models.Role

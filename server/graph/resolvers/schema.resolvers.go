@@ -6,44 +6,16 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"getting-to-go/graph/generated"
 	"getting-to-go/models"
 )
 
-// ID is the resolver for the id field.
-func (r *contributionResolver) ID(ctx context.Context, obj *models.Contribution) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+// Roles is the resolver for the roles field.
+func (r *userResolver) Roles(ctx context.Context, obj *models.User) ([]models.Role, error) {
+	return models.ConvertToRoleArray(obj.Roles), nil
 }
-
-// ID is the resolver for the id field.
-func (r *currencyResolver) ID(ctx context.Context, obj *models.Currency) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
-}
-
-// ID is the resolver for the id field.
-func (r *fundResolver) ID(ctx context.Context, obj *models.Fund) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
-}
-
-// ID is the resolver for the id field.
-func (r *userResolver) ID(ctx context.Context, obj *models.User) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
-}
-
-// Contribution returns generated.ContributionResolver implementation.
-func (r *Resolver) Contribution() generated.ContributionResolver { return &contributionResolver{r} }
-
-// Currency returns generated.CurrencyResolver implementation.
-func (r *Resolver) Currency() generated.CurrencyResolver { return &currencyResolver{r} }
-
-// Fund returns generated.FundResolver implementation.
-func (r *Resolver) Fund() generated.FundResolver { return &fundResolver{r} }
 
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
-type contributionResolver struct{ *Resolver }
-type currencyResolver struct{ *Resolver }
-type fundResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

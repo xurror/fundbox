@@ -4,16 +4,19 @@ package generated
 
 import (
 	"getting-to-go/models"
+
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/google/uuid"
 )
 
 type NewContribution struct {
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
+	Amount   float64   `json:"amount"`
+	Currency uuid.UUID `json:"currency"`
 }
 
 type NewFund struct {
-	Reason      string  `json:"reason"`
-	Description *string `json:"description,omitempty"`
+	Reason      string                     `json:"reason"`
+	Description graphql.Omittable[*string] `json:"description,omitempty"`
 }
 
 type NewUser struct {

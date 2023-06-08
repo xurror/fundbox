@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"getting-to-go/graph/generated"
 	"getting-to-go/models"
+
+	"github.com/google/uuid"
 )
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input generated.NewUser) (*models.User, error) {
-	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+	return r.userService.CreateUserFromInput(input)
 }
 
 // StartFund is the resolver for the startFund field.
@@ -22,7 +24,7 @@ func (r *mutationResolver) StartFund(ctx context.Context, input *generated.NewFu
 }
 
 // Contribute is the resolver for the contribute field.
-func (r *mutationResolver) Contribute(ctx context.Context, fundID string, input generated.NewContribution) (*models.Contribution, error) {
+func (r *mutationResolver) Contribute(ctx context.Context, fundID uuid.UUID, input generated.NewContribution) (*models.Contribution, error) {
 	panic(fmt.Errorf("not implemented: Contribute - contribute"))
 }
 

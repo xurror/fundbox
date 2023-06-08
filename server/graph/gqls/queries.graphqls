@@ -1,8 +1,8 @@
 type Query {
-    funds: [Fund!]!
-    fund(id: UUID!): Fund!
-    fundContributions(fund_id: UUID): [Contribution!]!
-    users: [User!]!
-    user(id: UUID!): User!
-    userContributions(user_id: UUID): [Contribution!]!
+    funds(limit: Int, offset: Int): [Fund!]!
+    fund(id: ID!): Fund!
+    fundContributions(fund_id: ID, limit: Int, offset: Int): [Contribution!]!
+    users(limit: Int, offset: Int): [User!]!
+    user(id: ID!): User!
+    userContributions(user_id: ID!, limit: Int, offset: Int): [Contribution!]!
 }

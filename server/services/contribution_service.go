@@ -28,3 +28,7 @@ func (s *ContributionService) GetContribution(id string) (*models.Contribution, 
 func (s *ContributionService) GetContributions(limit, offset int) ([]*models.Contribution, error) {
 	return models.GetContributions(limit, offset)
 }
+
+func (s *ContributionService) GetContributionsByUserID(userId uuid.UUID, limit, offset int) ([]*models.Contribution, error) {
+	return models.GetUserContributions(userId, limit, offset)
+}

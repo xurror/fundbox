@@ -2,24 +2,47 @@ package main
 
 import (
 	"fmt"
-
 	"getting-to-go/config"
 	"getting-to-go/controllers"
+	"getting-to-go/graph/generated"
+	"getting-to-go/graph/resolvers"
 	"getting-to-go/models"
 	"getting-to-go/services"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 
 	"github.com/gin-gonic/gin"
 )
 
+// Defining the Graphql handler
+func graphqlHandler() gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{}}))
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL Playground", "/graphql/query")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
 func main() {
 	fmt.Println("Hello, world!")
 
-	config, err := config.LoadConfig("./config/config.yaml")
+	appConfig, err := config.LoadConfig("./config/config.yaml")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = models.Connect(config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.Name)
+	err = models.Connect(appConfig.Database.Host, appConfig.Database.Port, appConfig.Database.User, appConfig.Database.Password, appConfig.Database.Name)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -44,5 +67,11 @@ func main() {
 	fundController.Register(apiV1)
 	contributionController.Register(apiV1)
 
-	router.Run(fmt.Sprintf(":%s", config.Server.Port))
+	router.POST("/graphql/query", graphqlHandler())
+	router.GET("/graphql", playgroundHandler())
+
+	err = router.Run(fmt.Sprintf(":%s", appConfig.Server.Port))
+	if err != nil {
+		return
+	}
 }

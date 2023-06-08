@@ -7,7 +7,7 @@ input NewFund {
 
 input NewContribution {
     amount: Float!
-    currency: UUID!
+    currency: ID!
 }
 
 input NewUser {
@@ -18,7 +18,7 @@ input NewUser {
 }
 
 type Mutation {
-    createUser(input: NewUser!): User!
-    startFund(input: NewFund): Fund! @hasRoles(roles: [INITIATOR])
-    contribute(fund_id: UUID!, input: NewContribution!): Contribution! @hasRoles(roles: [INITIATOR, CONTRIBUTOR])
+    createUser(input: NewUser!): User
+    startFund(input: NewFund): Fund @hasRoles(roles: [INITIATOR])
+    contribute(fund_id: ID!, input: NewContribution!): Contribution @hasRoles(roles: [INITIATOR, CONTRIBUTOR])
 }

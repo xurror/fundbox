@@ -1,6 +1,8 @@
 package resolvers
 
-import "getting-to-go/models"
+import (
+	"getting-to-go/services"
+)
 
 //go:generate go run github.com/99designs/gqlgen generate
 
@@ -9,7 +11,7 @@ import "getting-to-go/models"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	users         []*models.User
-	funds         []*models.Fund
-	contributions []*models.Contribution
+	userService         services.UserService
+	fundService         services.FundService
+	contributionService services.ContributionService
 }

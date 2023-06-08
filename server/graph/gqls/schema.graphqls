@@ -1,7 +1,7 @@
 scalar UUID
 
 type Currency {
-  id: UUID!
+  id: ID!
   name: String!
 }
 
@@ -11,13 +11,13 @@ enum Role {
 }
 
 type Fund {
-  id: UUID!
+  id: ID!
   reason: String!
   description: String,
 }
 
 type Contribution {
-  id: UUID!
+  id: ID!
   amount: Amount!
   contributor: User!
 }
@@ -28,7 +28,7 @@ type Amount {
 }
 
 type User {
-  id: UUID!
+  id: ID!
   first_name: String!
   last_name: String!
   email: String!

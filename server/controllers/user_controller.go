@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/google/uuid"
 	"net/http"
 	"strconv"
 
@@ -111,7 +112,7 @@ func (c *UserController) getUsers(ctx *gin.Context) {
 
 func (c *UserController) getUser(ctx *gin.Context) {
 	id := ctx.Param("id")
-	user, err := c.userService.GetUser(id)
+	user, err := c.userService.GetUser(uuid.MustParse(id))
 
 	if err != nil {
 		utils.HandleAppError(ctx, err)

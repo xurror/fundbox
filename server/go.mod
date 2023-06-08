@@ -12,8 +12,6 @@ replace getting-to-go/graph/generated => ./graph/generated
 
 replace getting-to-go/graph/gqls => ./graph/gqls
 
-replace getting-to-go/graph/marshalers => ./graph/marshalers
-
 replace getting-to-go/graph/resolvers => ./graph/resolvers
 
 replace getting-to-go/services => ./services

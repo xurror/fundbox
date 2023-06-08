@@ -1,8 +1,10 @@
 package services
 
 import (
+	"getting-to-go/graph/generated"
 	"getting-to-go/models"
 	"getting-to-go/utils"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -21,12 +23,22 @@ func (s *UserService) CreateUser(firstName, lastName, email, password string) (*
 		LastName:  lastName,
 		Email:     email,
 		Password:  password,
-		Roles:     []string{"INITIATOR"},
+		Roles:     models.ConvertToPQStringArray([]models.Role{"INITIATOR"}),
+	})
+}
+
+func (s *UserService) CreateUserFromInput(input generated.NewUser) (*models.User, error) {
+	return models.CreateUser(&models.User{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+		Email:     input.Email,
+		Password:  uuid.NewString(),
+		Roles:     models.ConvertToPQStringArray(input.Roles),
 	})
 }
 
 // GetUser retrieves a user by ID
-func (s *UserService) GetUser(id string) (*models.User, error) {
+func (s *UserService) GetUser(id uuid.UUID) (*models.User, error) {
 	return models.GetUser(id)
 }
 

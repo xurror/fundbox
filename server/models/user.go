@@ -1,10 +1,8 @@
 package models
 
-type Role string
-
-const (
-	Initiator   Role = "INITIATOR"
-	Contributor      = "CONTRIBUTOR"
+import (
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 // User represents a user in the system
@@ -14,7 +12,7 @@ type User struct {
 	LastName      string         `json:"last_name" gorm:"not null"`
 	Email         string         `json:"email" gorm:"unique;not null"`
 	Password      string         `json:"password,omitempty" gorm:"column:password_hash;not null"`
-	Roles         []Role         `json:"roles" gorm:"not null;type:varchar(128)[]"`
+	Roles         pq.StringArray `json:"roles" gorm:"not null;type:text[]"`
 	Contributions []Contribution `json:"-" gorm:"-"`
 }
 
@@ -32,7 +30,7 @@ func GetUsers(limit, offset int) ([]*User, error) {
 }
 
 // GetUser retrieves a user by ID
-func GetUser(id string) (*User, error) {
+func GetUser(id uuid.UUID) (*User, error) {
 	user := &User{}
 	result := db.First(&user, id)
 	return user, HandleError(result.Error)
@@ -45,7 +43,7 @@ func GetUserByEmail(email string) (*User, error) {
 	return user, HandleError(result.Error)
 }
 
-func GetUserContributions(userID string, limit, offset int) ([]*Contribution, error) {
+func GetUserContributions(userID uuid.UUID, limit, offset int) ([]*Contribution, error) {
 	var contributions []*Contribution
 	result := db.Limit(limit).Find(&contributions, "contributor_id = ?", userID)
 	return contributions, HandleError(result.Error)
