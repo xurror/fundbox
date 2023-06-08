@@ -55,7 +55,7 @@ func (c *FundController) getFund(ctx *gin.Context) {
 }
 
 func (c *FundController) getFunds(ctx *gin.Context) {
-	limit, offset := utils.GetPageLimiAndOffset(ctx)
+	limit, offset := utils.GetPageLimitAndOffset(ctx)
 	funds, err := c.fundService.GetFunds(limit, offset)
 	if err != nil {
 		utils.HandleAppError(ctx, err)
@@ -66,7 +66,7 @@ func (c *FundController) getFunds(ctx *gin.Context) {
 
 func (c *FundController) getFundContributions(ctx *gin.Context) {
 	id := ctx.Param("id")
-	limit, offset := utils.GetPageLimiAndOffset(ctx)
+	limit, offset := utils.GetPageLimitAndOffset(ctx)
 	contributions, err := c.fundService.GetFundContributions(id, limit, offset)
 	if err != nil {
 		utils.HandleAppError(ctx, err)

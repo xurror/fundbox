@@ -1,0 +1,8 @@
+type Query {
+    funds(limit: Int, offset: Int): [Fund!]!
+    fund(id: ID!): Fund!
+    fundContributions(fund_id: ID, limit: Int, offset: Int): [Contribution!]!
+    users(limit: Int, offset: Int): [User!]!
+    user(id: ID!): User!
+    userContributions(user_id: ID!, limit: Int, offset: Int): [Contribution!]!
+}

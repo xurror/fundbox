@@ -1,0 +1,25 @@
+directive @hasRoles(roles: [Role!]) on FIELD_DEFINITION
+
+input NewFund {
+    reason: String!
+    description: String
+}
+
+input NewContribution {
+    amount: Float!
+    currency: ID!
+}
+
+input NewUser {
+    first_name: String!
+    last_name: String!
+    email: String!
+    roles: [Role!]!
+}
+
+type Mutation {
+    signUp(input: NewUser!): User
+    createUser(input: NewUser!): User
+    startFund(input: NewFund): Fund @hasRoles(roles: [INITIATOR])
+    contribute(fund_id: ID!, input: NewContribution!): Contribution @hasRoles(roles: [INITIATOR, CONTRIBUTOR])
+}

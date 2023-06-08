@@ -16,6 +16,10 @@ import (
 
 var db *gorm.DB
 
+func DB() *gorm.DB {
+	return db
+}
+
 type Persistable struct {
 	ID uuid.UUID `json:"id" gorm:"primary_key;type:uuid"`
 }
@@ -47,9 +51,9 @@ func Connect(host, port, user, password, dbname string) error {
 	return nil
 }
 
-// Run Migration
+// RunMigrations Run Migration
 func RunMigrations() {
-	err := db.AutoMigrate(&User{}, &Fund{}, &Contributor{}, &Currency{}, &Amount{}, &Contribution{})
+	err := db.AutoMigrate(&User{}, &Fund{}, &Contribution{}, &Currency{}, &Amount{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to migrate database: %v", err))
 	}

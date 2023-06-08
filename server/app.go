@@ -1,25 +1,64 @@
 package main
 
 import (
+	"context"
 	"fmt"
-
+	"getting-to-go/auth"
 	"getting-to-go/config"
 	"getting-to-go/controllers"
+	"getting-to-go/graph/generated"
+	"getting-to-go/graph/resolvers"
 	"getting-to-go/models"
 	"getting-to-go/services"
-
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+// Defining the Graphql handler
+func graphqlHandler() gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	c := generated.Config{Resolvers: &resolvers.Resolver{}}
+	c.Directives.HasRoles = func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []models.Role) (res interface{}, err error) {
+		if !auth.ForContext(ctx).HasRoles(roles) {
+			return nil, fmt.Errorf("access denied")
+		}
+		return next(ctx)
+	}
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
+
+	// Panic recovery or HandlerFunc
+	h.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+		// notify bug tracker...
+		return gqlerror.Errorf("Internal server error!")
+	})
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the Playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL Playground", "/graphql/query")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
 
 func main() {
 	fmt.Println("Hello, world!")
 
-	config, err := config.LoadConfig("app/config/config.yaml")
+	appConfig, err := config.LoadConfig("./config/config.yaml")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = models.Connect(config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.Name)
+	err = models.Connect(appConfig.Database.Host, appConfig.Database.Port, appConfig.Database.User, appConfig.Database.Password, appConfig.Database.Name)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -35,9 +74,6 @@ func main() {
 	contributionService := services.NewContributionService()
 	contributionController := controllers.NewContributionController(contributionService)
 
-	contributorService := services.NewContributorService()
-	contributorController := controllers.NewContributorController(contributorService)
-
 	router := gin.Default()
 
 	api := router.Group("/api")
@@ -46,7 +82,14 @@ func main() {
 	userController.Register(apiV1)
 	fundController.Register(apiV1)
 	contributionController.Register(apiV1)
-	contributorController.Register(apiV1)
 
-	router.Run(fmt.Sprintf(":%s", config.Server.Port))
+	router.Use(auth.Middleware(models.DB()))
+
+	router.POST("/graphql/query", graphqlHandler())
+	router.GET("/graphql", playgroundHandler())
+
+	err = router.Run(fmt.Sprintf(":%s", appConfig.Server.Port))
+	if err != nil {
+		return
+	}
 }

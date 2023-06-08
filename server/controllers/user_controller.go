@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/google/uuid"
 	"net/http"
 	"strconv"
 
@@ -32,9 +33,10 @@ func (c *UserController) Register(router *gin.RouterGroup) {
 
 func (c *UserController) createUser(ctx *gin.Context) {
 	var req struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required,min=6"`
+		FirstName string `json:"first_name" binding:"required"`
+		LastName  string `json:"last_name" binding:"required"`
+		Email     string `json:"email" binding:"required,email"`
+		Password  string `json:"password" binding:"required,min=6"`
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -42,16 +44,18 @@ func (c *UserController) createUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.userService.CreateUser(req.Username, req.Email, req.Password)
+	user, err := c.userService.CreateUser(req.FirstName, req.LastName, req.Email, req.Password)
 	if err != nil {
 		utils.HandleAppError(ctx, err)
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"email":    user.Email,
+		"id":        user.ID,
+		"firstName": user.FirstName,
+		"lastName":  user.LastName,
+		"email":     user.Email,
+		"roles":     user.Roles,
 	})
 }
 
@@ -96,9 +100,10 @@ func (c *UserController) getUsers(ctx *gin.Context) {
 	var res []gin.H
 	for _, user := range users {
 		res = append(res, gin.H{
-			"id":       user.ID,
-			"username": user.Username,
-			"email":    user.Email,
+			"id":        user.ID,
+			"firstName": user.FirstName,
+			"lastName":  user.LastName,
+			"email":     user.Email,
 		})
 	}
 
@@ -107,7 +112,7 @@ func (c *UserController) getUsers(ctx *gin.Context) {
 
 func (c *UserController) getUser(ctx *gin.Context) {
 	id := ctx.Param("id")
-	user, err := c.userService.GetUser(id)
+	user, err := c.userService.GetUser(uuid.MustParse(id))
 
 	if err != nil {
 		utils.HandleAppError(ctx, err)
@@ -115,8 +120,10 @@ func (c *UserController) getUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"email":    user.Email,
+		"id":        user.ID,
+		"firstName": user.FirstName,
+		"lastName":  user.LastName,
+		"email":     user.Email,
+		"roles":     user.Roles,
 	})
 }
