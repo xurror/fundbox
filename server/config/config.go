@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,15 +23,17 @@ type AppConfig struct {
 
 // LoadConfig loads the application configuration from the given YAML file
 func LoadConfig(filename string) (*AppConfig, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %v", err)
 	}
 
-	var cfg AppConfig
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	// expand environment variables
+	data = []byte(os.ExpandEnv(string(data)))
+	conf := &AppConfig{}
+	if err := yaml.Unmarshal(data, conf); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %v", err)
 	}
 
-	return &cfg, nil
+	return conf, nil
 }
