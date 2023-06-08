@@ -62,7 +62,7 @@ func (c *ContributionController) getContribution(ctx *gin.Context) {
 }
 
 func (c *ContributionController) getContributions(ctx *gin.Context) {
-	limit, offset := utils.GetPageLimiAndOffset(ctx)
+	limit, offset := utils.GetPageLimitAndOffset(ctx)
 	contributions, err := c.contributionService.GetContributions(limit, offset)
 	if err != nil {
 		utils.HandleAppError(ctx, err)

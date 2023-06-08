@@ -1,24 +1,40 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"getting-to-go/auth"
 	"getting-to-go/config"
 	"getting-to-go/controllers"
 	"getting-to-go/graph/generated"
 	"getting-to-go/graph/resolvers"
 	"getting-to-go/models"
 	"getting-to-go/services"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-
 	"github.com/gin-gonic/gin"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Defining the Graphql handler
 func graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{}}))
+	c := generated.Config{Resolvers: &resolvers.Resolver{}}
+	c.Directives.HasRoles = func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []models.Role) (res interface{}, err error) {
+		if !auth.ForContext(ctx).HasRoles(roles) {
+			return nil, fmt.Errorf("access denied")
+		}
+		return next(ctx)
+	}
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
+
+	// Panic recovery or HandlerFunc
+	h.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+		// notify bug tracker...
+		return gqlerror.Errorf("Internal server error!")
+	})
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -66,6 +82,8 @@ func main() {
 	userController.Register(apiV1)
 	fundController.Register(apiV1)
 	contributionController.Register(apiV1)
+
+	router.Use(auth.Middleware(models.DB()))
 
 	router.POST("/graphql/query", graphqlHandler())
 	router.GET("/graphql", playgroundHandler())

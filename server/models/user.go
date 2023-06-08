@@ -48,3 +48,14 @@ func GetUserContributions(userID uuid.UUID, limit, offset int) ([]*Contribution,
 	result := db.Limit(limit).Find(&contributions, "contributor_id = ?", userID)
 	return contributions, HandleError(result.Error)
 }
+
+func (user *User) HasRoles(roles []Role) bool {
+	for _, role := range roles {
+		for _, userRole := range user.Roles {
+			if string(role) == userRole {
+				return true
+			}
+		}
+	}
+	return false
+}

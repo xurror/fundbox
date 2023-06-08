@@ -13,6 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// SignUp is the resolver for the signUp field.
+func (r *mutationResolver) SignUp(ctx context.Context, input generated.NewUser) (*models.User, error) {
+	return r.userService.SignUp(input)
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input generated.NewUser) (*models.User, error) {
 	return r.userService.CreateUserFromInput(input)

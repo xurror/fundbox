@@ -18,6 +18,7 @@ input NewUser {
 }
 
 type Mutation {
+    signUp(input: NewUser!): User
     createUser(input: NewUser!): User
     startFund(input: NewFund): Fund @hasRoles(roles: [INITIATOR])
     contribute(fund_id: ID!, input: NewContribution!): Contribution @hasRoles(roles: [INITIATOR, CONTRIBUTOR])

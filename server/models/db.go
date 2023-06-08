@@ -16,6 +16,10 @@ import (
 
 var db *gorm.DB
 
+func DB() *gorm.DB {
+	return db
+}
+
 type Persistable struct {
 	ID uuid.UUID `json:"id" gorm:"primary_key;type:uuid"`
 }
