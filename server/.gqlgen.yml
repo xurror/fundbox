@@ -20,10 +20,10 @@ model:
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: graph/resolvers
-  package: resolvers
-  filename_template: "{name}.resolvers.go"
-  # Optional: turn on to not generate template comments above resolvers
+  dir: graph/resolver
+  package: resolver
+  filename_template: "{name}.resolver.go"
+  # Optional: turn on to not generate template comments above resolver
 #omit_template_comment: false
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
@@ -45,7 +45,7 @@ struct_tag: json
 # e.g. type Thing struct { FieldA OtherThing } instead of { FieldA *OtherThing }
 # struct_fields_always_pointers: true
 
-# Optional: turn off to make resolvers return values instead of pointers for structs
+# Optional: turn off to make resolver return values instead of pointers for structs
 # resolvers_always_return_pointers: true
 
 # Optional: turn on to return pointers instead of values in unmarshalInput
@@ -63,7 +63,7 @@ nullable_input_omittable: true
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "getting-to-go/models"
+  - "getting-to-go/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -73,10 +73,10 @@ autobind:
 models:
   ID:
     model:
-      - getting-to-go/models.ID
+      - getting-to-go/model.UUID
   UUID:
     model:
-      - getting-to-go/models.ID
+      - getting-to-go/model.UUID
 #  Role:
 #    model:
 #      - getting-to-go/models.Role

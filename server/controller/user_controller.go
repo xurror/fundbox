@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"getting-to-go/services"
-	"getting-to-go/utils"
+	"getting-to-go/service"
+	"getting-to-go/util"
 
 	"github.com/gin-gonic/gin"
 )

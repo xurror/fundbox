@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"getting-to-go/services"
-	"getting-to-go/utils"
+	"getting-to-go/service"
+	"getting-to-go/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -1,4 +1,4 @@
-package resolvers
+package resolver
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -8,15 +8,10 @@ import (
 	"context"
 	"fmt"
 	"getting-to-go/graph/generated"
-	"getting-to-go/models"
+	models "getting-to-go/model"
 
 	"github.com/google/uuid"
 )
-
-// SignUp is the resolver for the signUp field.
-func (r *mutationResolver) SignUp(ctx context.Context, input generated.NewUser) (*models.User, error) {
-	return r.userService.SignUp(input)
-}
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input generated.NewUser) (*models.User, error) {

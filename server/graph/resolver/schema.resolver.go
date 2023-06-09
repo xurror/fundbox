@@ -1,4 +1,4 @@
-package resolvers
+package resolver
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -7,7 +7,7 @@ package resolvers
 import (
 	"context"
 	"getting-to-go/graph/generated"
-	"getting-to-go/models"
+	models "getting-to-go/model"
 )
 
 // Roles is the resolver for the roles field.
