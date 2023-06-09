@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"getting-to-go/service"
@@ -9,10 +9,10 @@ import (
 )
 
 type FundController struct {
-	fundService *services.FundService
+	fundService *service.FundService
 }
 
-func NewFundController(fundService *services.FundService) *FundController {
+func NewFundController(fundService *service.FundService) *FundController {
 	return &FundController{
 		fundService: fundService,
 	}
@@ -32,13 +32,13 @@ func (c *FundController) createFund(ctx *gin.Context) {
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.HandleBadRequest(ctx, err)
+		util.HandleBadRequest(ctx, err)
 		return
 	}
 
 	fund, err := c.fundService.CreateFund(req.Reason, req.Description)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, fund)
@@ -48,17 +48,17 @@ func (c *FundController) getFund(ctx *gin.Context) {
 	id := ctx.Param("id")
 	fund, err := c.fundService.GetFund(id)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, fund)
 }
 
 func (c *FundController) getFunds(ctx *gin.Context) {
-	limit, offset := utils.GetPageLimitAndOffset(ctx)
+	limit, offset := util.GetPageLimitAndOffset(ctx)
 	funds, err := c.fundService.GetFunds(limit, offset)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, funds)
@@ -66,10 +66,10 @@ func (c *FundController) getFunds(ctx *gin.Context) {
 
 func (c *FundController) getFundContributions(ctx *gin.Context) {
 	id := ctx.Param("id")
-	limit, offset := utils.GetPageLimitAndOffset(ctx)
+	limit, offset := util.GetPageLimitAndOffset(ctx)
 	contributions, err := c.fundService.GetFundContributions(id, limit, offset)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, contributions)

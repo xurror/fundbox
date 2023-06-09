@@ -1,9 +1,10 @@
-package models
+package model
 
 import (
 	"fmt"
 	"github.com/lib/pq"
 	"io"
+	"log"
 )
 
 type Role string
@@ -16,6 +17,26 @@ const (
 func (r *Role) String() pq.StringArray {
 	array := pq.StringArray{string(*r)}
 	return array
+}
+
+func FromString(role string) Role {
+	switch role {
+	case "INITIATOR":
+		return Initiator
+	case "CONTRIBUTOR":
+		return Contributor
+	default:
+		log.Panic(fmt.Sprintf("Unknown role: %s", role))
+		return ""
+	}
+}
+
+func FromStringArray(roles []string) []Role {
+	var convertedRoles []Role
+	for _, role := range roles {
+		convertedRoles = append(convertedRoles, FromString(role))
+	}
+	return convertedRoles
 }
 
 func ConvertToPQStringArray(roles []Role) pq.StringArray {
