@@ -10,7 +10,9 @@ import (
 // AppConfig contains the configuration for the application
 type AppConfig struct {
 	Server struct {
-		Port string `yaml:"port"`
+		Port        string `yaml:"port"`
+		Debug       bool   `yaml:"debug"`
+		DisableAuth bool   `yaml:"disableAuth"`
 	}
 	Database struct {
 		Host     string `yaml:"host"`

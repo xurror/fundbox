@@ -3,7 +3,7 @@
 package generated
 
 import (
-	"getting-to-go/models"
+	models "getting-to-go/model"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"

@@ -2,26 +2,34 @@ module getting-to-go
 
 go 1.20
 
-replace getting-to-go/utils => ./utils
+replace getting-to-go/config => ./config
 
-replace getting-to-go/models => ./models
+replace getting-to-go/controller => ./controller
 
 replace getting-to-go/graph => ./graph
 
 replace getting-to-go/graph/generated => ./graph/generated
 
-replace getting-to-go/graph/gqls => ./graph/gqls
+replace getting-to-go/graph/resolver => ./graph/resolver
 
-replace getting-to-go/graph/resolvers => ./graph/resolvers
+replace getting-to-go/model => ./model
 
-replace getting-to-go/services => ./services
+replace getting-to-go/server => ./server
 
-replace getting-to-go/controllers => ./controllers
+replace getting-to-go/server/middleware => ./server/middleware
 
-replace getting-to-go/config => ./config
+replace getting-to-go/service => ./service
+
+replace getting-to-go/util => ./util
 
 require (
 	github.com/99designs/gqlgen v0.17.32
+	github.com/appleboy/gin-jwt/v2 v2.9.1
+	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/location v0.0.2
+	github.com/gin-contrib/requestid v0.0.6
+	github.com/gin-contrib/secure v0.0.1
+	github.com/gin-contrib/timeout v0.0.3
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -42,6 +50,8 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -54,7 +64,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

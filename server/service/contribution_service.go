@@ -1,7 +1,7 @@
 package services
 
 import (
-	"getting-to-go/models"
+	"getting-to-go/model"
 	"github.com/google/uuid"
 )
 

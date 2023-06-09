@@ -1,7 +1,7 @@
-package resolvers
+package resolver
 
 import (
-	"getting-to-go/services"
+	"getting-to-go/service"
 )
 
 //go:generate go run github.com/99designs/gqlgen generate
