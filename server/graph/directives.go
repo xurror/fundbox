@@ -26,8 +26,8 @@ import (
 //	return nil, gqlerror.Errorf("Access denied!")
 //}
 
-func HasRolesDirective(ctx context.Context, obj interface{}, next graphql.Resolver, roles []models.Role) (res interface{}, err error) {
-	ginCtx, err := utils.GinContextFromContext(ctx)
+func HasRolesDirective(ctx context.Context, obj interface{}, next graphql.Resolver, roles []model.Role) (res interface{}, err error) {
+	ginCtx, err := util.GinContextFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}

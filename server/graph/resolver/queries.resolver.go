@@ -10,6 +10,7 @@ import (
 	"getting-to-go/graph/generated"
 	models "getting-to-go/model"
 	utils "getting-to-go/util"
+	jwt "github.com/appleboy/gin-jwt/v2"
 
 	"github.com/google/uuid"
 )
@@ -29,14 +30,21 @@ func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID
 	panic(fmt.Errorf("not implemented: FundContributions - fundContributions"))
 }
 
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*models.User, error) {
-	return r.userService.GetUsers(utils.GetLimitAndOffset(limit, offset))
+// CurrentUser is the resolver for the currentUser field.
+func (r *queryResolver) CurrentUser(ctx context.Context) (*models.User, error) {
+	c, _ := utils.GinContextFromContext(ctx)
+	claims := jwt.ExtractClaims(c)
+	return r.UserService.GetUser(uuid.MustParse(claims["id"].(string)))
 }
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id uuid.UUID) (*models.User, error) {
-	return r.userService.GetUser(id)
+	return r.UserService.GetUser(id)
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*models.User, error) {
+	return r.UserService.GetUsers(utils.GetLimitAndOffset(limit, offset))
 }
 
 // UserContributions is the resolver for the userContributions field.

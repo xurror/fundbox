@@ -3,7 +3,7 @@
 package generated
 
 import (
-	models "getting-to-go/model"
+	"getting-to-go/model"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
@@ -20,8 +20,8 @@ type NewFund struct {
 }
 
 type NewUser struct {
-	FirstName string        `json:"first_name"`
-	LastName  string        `json:"last_name"`
-	Email     string        `json:"email"`
-	Roles     []models.Role `json:"roles"`
+	FirstName string       `json:"first_name"`
+	LastName  string       `json:"last_name"`
+	Email     string       `json:"email"`
+	Roles     []model.Role `json:"roles"`
 }

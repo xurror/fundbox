@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"getting-to-go/service"
@@ -10,10 +10,10 @@ import (
 )
 
 type ContributionController struct {
-	contributionService *services.ContributionService
+	contributionService *service.ContributionService
 }
 
-func NewContributionController(contributionService *services.ContributionService) *ContributionController {
+func NewContributionController(contributionService *service.ContributionService) *ContributionController {
 	return &ContributionController{
 		contributionService: contributionService,
 	}
@@ -34,7 +34,7 @@ func (c *ContributionController) createContribution(ctx *gin.Context) {
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.HandleBadRequest(ctx, err)
+		util.HandleBadRequest(ctx, err)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (c *ContributionController) createContribution(ctx *gin.Context) {
 		req.CurrencyID,
 	)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, contribution)
@@ -55,17 +55,17 @@ func (c *ContributionController) getContribution(ctx *gin.Context) {
 	id := ctx.Param("id")
 	contribution, err := c.contributionService.GetContribution(id)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, contribution)
 }
 
 func (c *ContributionController) getContributions(ctx *gin.Context) {
-	limit, offset := utils.GetPageLimitAndOffset(ctx)
+	limit, offset := util.GetPageLimitAndOffset(ctx)
 	contributions, err := c.contributionService.GetContributions(limit, offset)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
+		util.HandleAppError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, contributions)

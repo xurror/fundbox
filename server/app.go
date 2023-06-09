@@ -14,12 +14,12 @@ func main() {
 		fmt.Println(err)
 	}
 
-	err = models.Connect(c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name)
+	err = model.Connect(c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	models.RunMigrations()
+	model.RunMigrations()
 
 	s, err := server.NewServer(server.NewConfig(c))
 	if err != nil {

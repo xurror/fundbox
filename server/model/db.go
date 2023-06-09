@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"errors"
@@ -65,7 +65,7 @@ func HandleError(err error) error {
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return utils.NewError(http.StatusNotFound, "Record not found")
+		return util.NewError(http.StatusNotFound, "Record not found")
 	}
-	return utils.NewError(http.StatusInternalServerError, err.Error())
+	return util.NewError(http.StatusInternalServerError, err.Error())
 }

@@ -41,15 +41,15 @@ func CorsConfig() cors.Config {
 
 func SecureConfig() secure.Config {
 	return secure.Config{
-		SSLRedirect:           false,
-		IsDevelopment:         false,
-		STSSeconds:            315360000,
-		STSIncludeSubdomains:  false,
-		FrameDeny:             false,
-		ContentTypeNosniff:    false,
-		BrowserXssFilter:      false,
-		ContentSecurityPolicy: "",
-		IENoOpen:              false,
-		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+		//SSLRedirect:           false,
+		//IsDevelopment:         false,
+		//STSSeconds:            315360000,
+		//STSIncludeSubdomains:  false,
+		//FrameDeny:             false,
+		//ContentTypeNosniff:    false,
+		//BrowserXssFilter:      false,
+		//ContentSecurityPolicy: "",
+		//IENoOpen:              false,
+		//SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	models "getting-to-go/model"
+	"getting-to-go/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -43,7 +43,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	HasRoles func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []models.Role) (res interface{}, err error)
+	HasRoles func(ctx context.Context, obj interface{}, next graphql.Resolver, roles []model.Role) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		CurrentUser       func(childComplexity int) int
 		Fund              func(childComplexity int, id uuid.UUID) int
 		FundContributions func(childComplexity int, fundID *uuid.UUID, limit *int, offset *int) int
 		Funds             func(childComplexity int, limit *int, offset *int) int
@@ -94,20 +95,21 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input NewUser) (*models.User, error)
-	StartFund(ctx context.Context, input *NewFund) (*models.Fund, error)
-	Contribute(ctx context.Context, fundID uuid.UUID, input NewContribution) (*models.Contribution, error)
+	CreateUser(ctx context.Context, input NewUser) (*model.User, error)
+	StartFund(ctx context.Context, input *NewFund) (*model.Fund, error)
+	Contribute(ctx context.Context, fundID uuid.UUID, input NewContribution) (*model.Contribution, error)
 }
 type QueryResolver interface {
-	Funds(ctx context.Context, limit *int, offset *int) ([]*models.Fund, error)
-	Fund(ctx context.Context, id uuid.UUID) (*models.Fund, error)
-	FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*models.Contribution, error)
-	Users(ctx context.Context, limit *int, offset *int) ([]*models.User, error)
-	User(ctx context.Context, id uuid.UUID) (*models.User, error)
-	UserContributions(ctx context.Context, userID uuid.UUID, limit *int, offset *int) ([]*models.Contribution, error)
+	Funds(ctx context.Context, limit *int, offset *int) ([]*model.Fund, error)
+	Fund(ctx context.Context, id uuid.UUID) (*model.Fund, error)
+	FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error)
+	CurrentUser(ctx context.Context) (*model.User, error)
+	User(ctx context.Context, id uuid.UUID) (*model.User, error)
+	Users(ctx context.Context, limit *int, offset *int) ([]*model.User, error)
+	UserContributions(ctx context.Context, userID uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error)
 }
 type UserResolver interface {
-	Roles(ctx context.Context, obj *models.User) ([]models.Role, error)
+	Roles(ctx context.Context, obj *model.User) ([]model.Role, error)
 }
 
 type executableSchema struct {
@@ -230,6 +232,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StartFund(childComplexity, args["input"].(*NewFund)), true
+
+	case "Query.currentUser":
+		if e.complexity.Query.CurrentUser == nil {
+			break
+		}
+
+		return e.complexity.Query.CurrentUser(childComplexity), true
 
 	case "Query.fund":
 		if e.complexity.Query.Fund == nil {
@@ -475,8 +484,9 @@ type Mutation {
     funds(limit: Int, offset: Int): [Fund!]!
     fund(id: ID!): Fund!
     fundContributions(fund_id: ID, limit: Int, offset: Int): [Contribution!]!
-    users(limit: Int, offset: Int): [User!]!
+    currentUser: User!
     user(id: ID!): User!
+    users(limit: Int, offset: Int): [User!]!
     userContributions(user_id: ID!, limit: Int, offset: Int): [Contribution!]!
 }
 `, BuiltIn: false},
@@ -527,7 +537,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) dir_hasRoles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []models.Role
+	var arg0 []model.Role
 	if tmp, ok := rawArgs["roles"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roles"))
 		arg0, err = ec.unmarshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx, tmp)
@@ -790,7 +800,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Amount_value(ctx context.Context, field graphql.CollectedField, obj *models.Amount) (ret graphql.Marshaler) {
+func (ec *executionContext) _Amount_value(ctx context.Context, field graphql.CollectedField, obj *model.Amount) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Amount_value(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -834,7 +844,7 @@ func (ec *executionContext) fieldContext_Amount_value(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Amount_currency(ctx context.Context, field graphql.CollectedField, obj *models.Amount) (ret graphql.Marshaler) {
+func (ec *executionContext) _Amount_currency(ctx context.Context, field graphql.CollectedField, obj *model.Amount) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Amount_currency(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -860,7 +870,7 @@ func (ec *executionContext) _Amount_currency(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Currency)
+	res := resTmp.(model.Currency)
 	fc.Result = res
 	return ec.marshalNCurrency2gettingᚑtoᚑgoᚋmodelᚐCurrency(ctx, field.Selections, res)
 }
@@ -884,7 +894,7 @@ func (ec *executionContext) fieldContext_Amount_currency(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Contribution_id(ctx context.Context, field graphql.CollectedField, obj *models.Contribution) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contribution_id(ctx context.Context, field graphql.CollectedField, obj *model.Contribution) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contribution_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -928,7 +938,7 @@ func (ec *executionContext) fieldContext_Contribution_id(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Contribution_amount(ctx context.Context, field graphql.CollectedField, obj *models.Contribution) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contribution_amount(ctx context.Context, field graphql.CollectedField, obj *model.Contribution) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contribution_amount(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -954,7 +964,7 @@ func (ec *executionContext) _Contribution_amount(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.Amount)
+	res := resTmp.(model.Amount)
 	fc.Result = res
 	return ec.marshalNAmount2gettingᚑtoᚑgoᚋmodelᚐAmount(ctx, field.Selections, res)
 }
@@ -978,7 +988,7 @@ func (ec *executionContext) fieldContext_Contribution_amount(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Contribution_contributor(ctx context.Context, field graphql.CollectedField, obj *models.Contribution) (ret graphql.Marshaler) {
+func (ec *executionContext) _Contribution_contributor(ctx context.Context, field graphql.CollectedField, obj *model.Contribution) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Contribution_contributor(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1004,7 +1014,7 @@ func (ec *executionContext) _Contribution_contributor(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(models.User)
+	res := resTmp.(model.User)
 	fc.Result = res
 	return ec.marshalNUser2gettingᚑtoᚑgoᚋmodelᚐUser(ctx, field.Selections, res)
 }
@@ -1034,7 +1044,7 @@ func (ec *executionContext) fieldContext_Contribution_contributor(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Currency_id(ctx context.Context, field graphql.CollectedField, obj *models.Currency) (ret graphql.Marshaler) {
+func (ec *executionContext) _Currency_id(ctx context.Context, field graphql.CollectedField, obj *model.Currency) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Currency_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1078,7 +1088,7 @@ func (ec *executionContext) fieldContext_Currency_id(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Currency_name(ctx context.Context, field graphql.CollectedField, obj *models.Currency) (ret graphql.Marshaler) {
+func (ec *executionContext) _Currency_name(ctx context.Context, field graphql.CollectedField, obj *model.Currency) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Currency_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1122,7 +1132,7 @@ func (ec *executionContext) fieldContext_Currency_name(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Fund_id(ctx context.Context, field graphql.CollectedField, obj *models.Fund) (ret graphql.Marshaler) {
+func (ec *executionContext) _Fund_id(ctx context.Context, field graphql.CollectedField, obj *model.Fund) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Fund_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1166,7 +1176,7 @@ func (ec *executionContext) fieldContext_Fund_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Fund_reason(ctx context.Context, field graphql.CollectedField, obj *models.Fund) (ret graphql.Marshaler) {
+func (ec *executionContext) _Fund_reason(ctx context.Context, field graphql.CollectedField, obj *model.Fund) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Fund_reason(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1210,7 +1220,7 @@ func (ec *executionContext) fieldContext_Fund_reason(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Fund_description(ctx context.Context, field graphql.CollectedField, obj *models.Fund) (ret graphql.Marshaler) {
+func (ec *executionContext) _Fund_description(ctx context.Context, field graphql.CollectedField, obj *model.Fund) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Fund_description(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1274,7 +1284,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.User)
+	res := resTmp.(*model.User)
 	fc.Result = res
 	return ec.marshalOUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx, field.Selections, res)
 }
@@ -1350,7 +1360,7 @@ func (ec *executionContext) _Mutation_startFund(ctx context.Context, field graph
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*models.Fund); ok {
+		if data, ok := tmp.(*model.Fund); ok {
 			return data, nil
 		}
 		return nil, fmt.Errorf(`unexpected type %T from directive, should be *getting-to-go/model.Fund`, tmp)
@@ -1362,7 +1372,7 @@ func (ec *executionContext) _Mutation_startFund(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.Fund)
+	res := resTmp.(*model.Fund)
 	fc.Result = res
 	return ec.marshalOFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx, field.Selections, res)
 }
@@ -1434,7 +1444,7 @@ func (ec *executionContext) _Mutation_contribute(ctx context.Context, field grap
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*models.Contribution); ok {
+		if data, ok := tmp.(*model.Contribution); ok {
 			return data, nil
 		}
 		return nil, fmt.Errorf(`unexpected type %T from directive, should be *getting-to-go/model.Contribution`, tmp)
@@ -1446,7 +1456,7 @@ func (ec *executionContext) _Mutation_contribute(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.Contribution)
+	res := resTmp.(*model.Contribution)
 	fc.Result = res
 	return ec.marshalOContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐContribution(ctx, field.Selections, res)
 }
@@ -1509,7 +1519,7 @@ func (ec *executionContext) _Query_funds(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Fund)
+	res := resTmp.([]*model.Fund)
 	fc.Result = res
 	return ec.marshalNFund2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐFundᚄ(ctx, field.Selections, res)
 }
@@ -1572,7 +1582,7 @@ func (ec *executionContext) _Query_fund(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Fund)
+	res := resTmp.(*model.Fund)
 	fc.Result = res
 	return ec.marshalNFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx, field.Selections, res)
 }
@@ -1635,7 +1645,7 @@ func (ec *executionContext) _Query_fundContributions(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Contribution)
+	res := resTmp.([]*model.Contribution)
 	fc.Result = res
 	return ec.marshalNContribution2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐContributionᚄ(ctx, field.Selections, res)
 }
@@ -1672,8 +1682,8 @@ func (ec *executionContext) fieldContext_Query_fundContributions(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_users(ctx, field)
+func (ec *executionContext) _Query_currentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_currentUser(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1686,7 +1696,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+		return ec.resolvers.Query().CurrentUser(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1698,12 +1708,12 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.User)
+	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_currentUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1724,17 +1734,6 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_users_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -1765,7 +1764,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.User)
+	res := resTmp.(*model.User)
 	fc.Result = res
 	return ec.marshalNUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx, field.Selections, res)
 }
@@ -1806,6 +1805,73 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_users(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Users(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "first_name":
+				return ec.fieldContext_User_first_name(ctx, field)
+			case "last_name":
+				return ec.fieldContext_User_last_name(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "roles":
+				return ec.fieldContext_User_roles(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_users_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_userContributions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_userContributions(ctx, field)
 	if err != nil {
@@ -1832,7 +1898,7 @@ func (ec *executionContext) _Query_userContributions(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Contribution)
+	res := resTmp.([]*model.Contribution)
 	fc.Result = res
 	return ec.marshalNContribution2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐContributionᚄ(ctx, field.Selections, res)
 }
@@ -1998,7 +2064,7 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2042,7 +2108,7 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _User_first_name(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_first_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_first_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2086,7 +2152,7 @@ func (ec *executionContext) fieldContext_User_first_name(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _User_last_name(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_last_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_last_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2130,7 +2196,7 @@ func (ec *executionContext) fieldContext_User_last_name(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_email(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2174,7 +2240,7 @@ func (ec *executionContext) fieldContext_User_email(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _User_roles(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_roles(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_roles(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2200,7 +2266,7 @@ func (ec *executionContext) _User_roles(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Role)
+	res := resTmp.([]model.Role)
 	fc.Result = res
 	return ec.marshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx, field.Selections, res)
 }
@@ -4133,7 +4199,7 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 
 var amountImplementors = []string{"Amount"}
 
-func (ec *executionContext) _Amount(ctx context.Context, sel ast.SelectionSet, obj *models.Amount) graphql.Marshaler {
+func (ec *executionContext) _Amount(ctx context.Context, sel ast.SelectionSet, obj *model.Amount) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, amountImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4177,7 +4243,7 @@ func (ec *executionContext) _Amount(ctx context.Context, sel ast.SelectionSet, o
 
 var contributionImplementors = []string{"Contribution"}
 
-func (ec *executionContext) _Contribution(ctx context.Context, sel ast.SelectionSet, obj *models.Contribution) graphql.Marshaler {
+func (ec *executionContext) _Contribution(ctx context.Context, sel ast.SelectionSet, obj *model.Contribution) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, contributionImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4226,7 +4292,7 @@ func (ec *executionContext) _Contribution(ctx context.Context, sel ast.Selection
 
 var currencyImplementors = []string{"Currency"}
 
-func (ec *executionContext) _Currency(ctx context.Context, sel ast.SelectionSet, obj *models.Currency) graphql.Marshaler {
+func (ec *executionContext) _Currency(ctx context.Context, sel ast.SelectionSet, obj *model.Currency) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, currencyImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4270,7 +4336,7 @@ func (ec *executionContext) _Currency(ctx context.Context, sel ast.SelectionSet,
 
 var fundImplementors = []string{"Fund"}
 
-func (ec *executionContext) _Fund(ctx context.Context, sel ast.SelectionSet, obj *models.Fund) graphql.Marshaler {
+func (ec *executionContext) _Fund(ctx context.Context, sel ast.SelectionSet, obj *model.Fund) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, fundImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4453,7 +4519,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "users":
+		case "currentUser":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4462,7 +4528,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_users(ctx, field)
+				res = ec._Query_currentUser(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4485,6 +4551,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_user(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "users":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_users(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4552,7 +4640,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var userImplementors = []string{"User"}
 
-func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *models.User) graphql.Marshaler {
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -4966,7 +5054,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAmount2gettingᚑtoᚑgoᚋmodelᚐAmount(ctx context.Context, sel ast.SelectionSet, v models.Amount) graphql.Marshaler {
+func (ec *executionContext) marshalNAmount2gettingᚑtoᚑgoᚋmodelᚐAmount(ctx context.Context, sel ast.SelectionSet, v model.Amount) graphql.Marshaler {
 	return ec._Amount(ctx, sel, &v)
 }
 
@@ -4985,7 +5073,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNContribution2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐContributionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Contribution) graphql.Marshaler {
+func (ec *executionContext) marshalNContribution2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐContributionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Contribution) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5029,7 +5117,7 @@ func (ec *executionContext) marshalNContribution2ᚕᚖgettingᚑtoᚑgoᚋmodel
 	return ret
 }
 
-func (ec *executionContext) marshalNContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐContribution(ctx context.Context, sel ast.SelectionSet, v *models.Contribution) graphql.Marshaler {
+func (ec *executionContext) marshalNContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐContribution(ctx context.Context, sel ast.SelectionSet, v *model.Contribution) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5039,7 +5127,7 @@ func (ec *executionContext) marshalNContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐ
 	return ec._Contribution(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCurrency2gettingᚑtoᚑgoᚋmodelᚐCurrency(ctx context.Context, sel ast.SelectionSet, v models.Currency) graphql.Marshaler {
+func (ec *executionContext) marshalNCurrency2gettingᚑtoᚑgoᚋmodelᚐCurrency(ctx context.Context, sel ast.SelectionSet, v model.Currency) graphql.Marshaler {
 	return ec._Currency(ctx, sel, &v)
 }
 
@@ -5058,11 +5146,11 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) marshalNFund2gettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v models.Fund) graphql.Marshaler {
+func (ec *executionContext) marshalNFund2gettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v model.Fund) graphql.Marshaler {
 	return ec._Fund(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNFund2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐFundᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Fund) graphql.Marshaler {
+func (ec *executionContext) marshalNFund2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐFundᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Fund) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5106,7 +5194,7 @@ func (ec *executionContext) marshalNFund2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐFund�
 	return ret
 }
 
-func (ec *executionContext) marshalNFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v *models.Fund) graphql.Marshaler {
+func (ec *executionContext) marshalNFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v *model.Fund) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5117,12 +5205,12 @@ func (ec *executionContext) marshalNFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx
 }
 
 func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
-	res, err := models.UnmarshalUUID(v)
+	res, err := model.UnmarshalUUID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-	res := models.MarshalUUID(v)
+	res := model.MarshalUUID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5141,23 +5229,23 @@ func (ec *executionContext) unmarshalNNewUser2gettingᚑtoᚑgoᚋgraphᚋgenera
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx context.Context, v interface{}) (models.Role, error) {
-	var res models.Role
+func (ec *executionContext) unmarshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+	var res model.Role
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v models.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, v interface{}) ([]models.Role, error) {
+func (ec *executionContext) unmarshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, v interface{}) ([]model.Role, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]models.Role, len(vSlice))
+	res := make([]model.Role, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
 		res[i], err = ec.unmarshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx, vSlice[i])
@@ -5168,7 +5256,7 @@ func (ec *executionContext) unmarshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRole�
 	return res, nil
 }
 
-func (ec *executionContext) marshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Role) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5227,11 +5315,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2gettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2gettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5275,7 +5363,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgettingᚑtoᚑgoᚋmodelᚐUser�
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5564,14 +5652,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐContribution(ctx context.Context, sel ast.SelectionSet, v *models.Contribution) graphql.Marshaler {
+func (ec *executionContext) marshalOContribution2ᚖgettingᚑtoᚑgoᚋmodelᚐContribution(ctx context.Context, sel ast.SelectionSet, v *model.Contribution) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Contribution(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v *models.Fund) graphql.Marshaler {
+func (ec *executionContext) marshalOFund2ᚖgettingᚑtoᚑgoᚋmodelᚐFund(ctx context.Context, sel ast.SelectionSet, v *model.Fund) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -5582,7 +5670,7 @@ func (ec *executionContext) unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(
 	if v == nil {
 		return nil, nil
 	}
-	res, err := models.UnmarshalUUID(v)
+	res, err := model.UnmarshalUUID(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -5590,7 +5678,7 @@ func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ct
 	if v == nil {
 		return graphql.Null
 	}
-	res := models.MarshalUUID(*v)
+	res := model.MarshalUUID(*v)
 	return res
 }
 
@@ -5618,7 +5706,7 @@ func (ec *executionContext) unmarshalONewFund2ᚖgettingᚑtoᚑgoᚋgraphᚋgen
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, v interface{}) ([]models.Role, error) {
+func (ec *executionContext) unmarshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, v interface{}) ([]model.Role, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -5627,7 +5715,7 @@ func (ec *executionContext) unmarshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRole�
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]models.Role, len(vSlice))
+	res := make([]model.Role, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
 		res[i], err = ec.unmarshalNRole2gettingᚑtoᚑgoᚋmodelᚐRole(ctx, vSlice[i])
@@ -5638,7 +5726,7 @@ func (ec *executionContext) unmarshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRole�
 	return res, nil
 }
 
-func (ec *executionContext) marshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Role) graphql.Marshaler {
+func (ec *executionContext) marshalORole2ᚕgettingᚑtoᚑgoᚋmodelᚐRoleᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Role) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -5711,7 +5799,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgettingᚑtoᚑgoᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

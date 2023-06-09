@@ -1,8 +1,8 @@
-package controllers
+package controller
 
 import (
 	"getting-to-go/service"
-	"getting-to-go/util"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,39 +10,47 @@ import (
 
 // AuthController provides user-related endpoints
 type AuthController struct {
-	userService *services.UserService
+	authService *service.AuthService
 }
 
 // NewAuthController creates a new AuthController instance
-func NewAuthController(userService *services.UserService) *UserController {
-	return &UserController{
-		userService: userService,
+func NewAuthController(authService *service.AuthService) *AuthController {
+	return &AuthController{
+		authService: authService,
 	}
 }
 
-// Register registers the UserController routes with the given Gin engine
+// Register registers the AuthController routes with the given Gin engine
 func (c *AuthController) Register(router *gin.RouterGroup, loginHandler func(c *gin.Context)) {
+	router.POST("/signup", c.signUp)
 	router.POST("/login", loginHandler)
-	router.POST("/signup", c.createUser)
 }
 
-func (c *AuthController) createUser(ctx *gin.Context) {
+func (c *AuthController) signUp(ctx *gin.Context) {
 	var req struct {
-		FirstName string `json:"first_name" binding:"required"`
-		LastName  string `json:"last_name" binding:"required"`
-		Email     string `json:"email" binding:"required,email"`
-		Password  string `json:"password" binding:"required,min=6"`
+		FirstName string   `json:"first_name" binding:"required"`
+		LastName  string   `json:"last_name" binding:"required"`
+		Email     string   `json:"email" binding:"required,email"`
+		Password  string   `json:"password" binding:"required,min=6"`
+		Roles     []string `json:"roles" binding:"required"`
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		utils.HandleBadRequest(ctx, err)
-		return
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Panic(err)
 	}
 
-	user, err := c.userService.CreateUser(req.FirstName, req.LastName, req.Email, req.Password)
+	user, err := c.authService.SignUp(
+		ctx,
+		req.FirstName,
+		req.LastName,
+		req.Email,
+		req.Password,
+		req.Roles,
+	)
 	if err != nil {
-		utils.HandleAppError(ctx, err)
-		return
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while creating user"})
+		log.Panic(err)
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{

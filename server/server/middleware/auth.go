@@ -27,7 +27,7 @@ func GetAuthMiddleware(db *gorm.DB) *jwt.GinJWTMiddleware {
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*models.User); ok {
+			if v, ok := data.(*model.User); ok {
 				return jwt.MapClaims{
 					identityKey: v.ID,
 				}
@@ -37,7 +37,7 @@ func GetAuthMiddleware(db *gorm.DB) *jwt.GinJWTMiddleware {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			id := uuid.MustParse(claims[identityKey].(string))
-			user := &models.User{}
+			user := &model.User{}
 			db.First(&user, "id = ?", id)
 			return user
 		},
@@ -47,20 +47,20 @@ func GetAuthMiddleware(db *gorm.DB) *jwt.GinJWTMiddleware {
 				return "", jwt.ErrMissingLoginValues
 			}
 
-			user := &models.User{}
+			user := &model.User{}
 			result := db.First(&user, "email = ?", login.Email)
 			if result.Error != nil {
-				return nil, utils.NewError(http.StatusUnauthorized, jwt.ErrFailedAuthentication.Error())
+				return nil, util.NewError(http.StatusUnauthorized, jwt.ErrFailedAuthentication.Error())
 			}
 
 			// If the password does not match, return an error
-			if !utils.CheckPasswordHash(user.Password, login.Password) {
-				return nil, utils.NewError(http.StatusUnauthorized, "Invalid email or password")
+			if !util.CheckPasswordHash(user.Password, login.Password) {
+				return nil, util.NewError(http.StatusUnauthorized, "Invalid email or password")
 			}
 			return user, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*models.User); ok && v.HasRoles([]models.Role{models.Initiator, models.Contributor}) {
+			if v, ok := data.(*model.User); ok && v.HasRoles([]model.Role{model.Initiator, model.Contributor}) {
 				return true
 			}
 
@@ -68,7 +68,6 @@ func GetAuthMiddleware(db *gorm.DB) *jwt.GinJWTMiddleware {
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
-				"code":    code,
 				"message": message,
 			})
 		},
