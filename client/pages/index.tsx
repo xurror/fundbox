@@ -26,7 +26,11 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
     width: '50%',
     height: '0.5rem',
-    borderRadius: 50
+    borderRadius: 50,
+    backgroundColor: '#4C51C61A',
+  },
+  [`&.${linearProgressClasses.bar1Determinate}`]: {
+    backgroundColor: 'red',
   },
 }));
 
@@ -97,7 +101,7 @@ export default function App() {
         </div>
 
         <div className='flex flex-1 flex-col items-center'>
-          <h1 className='text-dark_blue-100 text-3xl font-semibold tracking-[-1px]'>Create a Funds</h1>
+          <h1 className='text-dark_blue-100 text-3xl font-semibold tracking-[-1px]'>Create a Fund</h1>
 
           <div className='flex flex-col flex-1 items-center p-6 mt-6'>
             {!auth && (

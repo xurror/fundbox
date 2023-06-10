@@ -1,12 +1,29 @@
 import Head from 'next/head'
 import { ChangeEvent, useState } from 'react';
-import LinearProgress from '@mui/material/LinearProgress';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
+import FormControl, {formControlClasses} from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
+import { styled } from '@mui/material/styles';
+
+const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  [`&.${linearProgressClasses.root}`]: {
+    width: '50%',
+    height: '0.5rem',
+    borderRadius: 50,
+    backgroundColor: '#4C51C61A',
+  },
+}));
+
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+  [`&.${formControlClasses.root}`]: {
+    width: '100%',
+    marginBottom: '1rem'
+  },
+}));
 
 export const Fund = () => {
   const [form, setForm] = useState({
@@ -54,10 +71,9 @@ export const Fund = () => {
 
       <main className='w-full flex flex-col'>
         <div className='w-full mt-10 mb-6 flex items-center justify-center'>
-          <LinearProgress
+          <StyledLinearProgress
             variant="determinate"
             value={progress}
-            className='w-1/2 h-2 rounded'
           />
         </div>
 
@@ -68,7 +84,7 @@ export const Fund = () => {
           </div>
 
           <div className='w-full p-6 mt-6 mx-6'>
-            <FormControl className='mt-4' fullWidth>
+            <StyledFormControl>
               <TextField 
                 id="outlined-basic" 
                 label="Name"
@@ -77,9 +93,9 @@ export const Fund = () => {
                 onChange={(e) => updateForm(e, 'name')}
                 disabled={form.disabled}
               />
-            </FormControl>
+            </StyledFormControl>
 
-            <FormControl className='mt-4' fullWidth>
+            <StyledFormControl>
               <TextField 
                 id="outlined-basic" 
                 label="Nmber"
@@ -88,9 +104,9 @@ export const Fund = () => {
                 onChange={(e) => updateForm(e, 'number')}
                 disabled={form.disabled}
               />
-            </FormControl>
+            </StyledFormControl>
 
-            <FormControl className='mt-4' fullWidth>
+            <StyledFormControl>
               <TextField 
                 id="outlined-basic" 
                 label="Amount"
@@ -102,9 +118,9 @@ export const Fund = () => {
                 onChange={(e) => updateForm(e, 'amount')}
                 disabled={form.disabled}
               />
-            </FormControl>
+            </StyledFormControl>
             
-            <FormControl  className='mt-4' fullWidth>
+            <StyledFormControl>
               <InputLabel id="demo-simple-select-label">Payment method</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
@@ -117,7 +133,7 @@ export const Fund = () => {
                 <MenuItem value={'momo'}>MTN Mobile Money</MenuItem>
                 <MenuItem value={'om'}>Orange Money</MenuItem>
               </Select>
-            </FormControl>
+            </StyledFormControl>
           </div>
           <div className='w-full px-6 my-5 mt-20'>
             <button

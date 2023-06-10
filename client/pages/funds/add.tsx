@@ -1,9 +1,26 @@
 import React, { ChangeEvent, useState } from 'react'
 import Head from 'next/head'
-import LinearProgress from '@mui/material/LinearProgress';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
-import FormControl from '@mui/material/FormControl';
+import FormControl, {formControlClasses} from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
+import { styled } from '@mui/material/styles';
+
+const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  [`&.${linearProgressClasses.root}`]: {
+    width: '50%',
+    height: '0.5rem',
+    borderRadius: 50,
+    backgroundColor: '#4C51C61A',
+  },
+}));
+
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+  [`&.${formControlClasses.root}`]: {
+    width: '100%',
+    marginBottom: '1rem'
+  },
+}));
 
 export default function Add() {
   const [form, setForm] = useState({
@@ -49,10 +66,9 @@ export default function Add() {
 
       <main className='w-full flex flex-col'>
         <div className='w-full mt-10 mb-6 flex items-center justify-center'>
-          <LinearProgress
+          <StyledLinearProgress
             variant="determinate"
             value={progress}
-            className='w-1/2 h-2 rounded'
           />
         </div>
 
@@ -63,7 +79,7 @@ export default function Add() {
           </div>
 
           <div className='w-full p-6 mt-6 mx-6'>
-            <FormControl className='mt-4' fullWidth>
+            <StyledFormControl>
               <TextField 
                 id="outlined-basic" 
                 label="Name"
@@ -72,9 +88,9 @@ export default function Add() {
                 onChange={(e) => updateForm(e, 'name')}
                 disabled={form.disabled}
               />
-            </FormControl>
+            </StyledFormControl>
 
-            <FormControl className='mt-4' fullWidth>
+            <StyledFormControl>
               <TextField 
                 id="outlined-basic" 
                 label="Description"
@@ -83,7 +99,7 @@ export default function Add() {
                 onChange={(e) => updateForm(e, 'description')}
                 disabled={form.disabled}
               />
-            </FormControl>
+            </StyledFormControl>
 
             {link && (
               <div className='bg-light-100 h-28 rounded-3xl mt-5 p-4 flex items-center'>
