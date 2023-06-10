@@ -4,7 +4,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { useState } from 'react';
-import LinearProgress from '@mui/material/LinearProgress';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/PersonOutlined';
@@ -19,6 +19,14 @@ const StyledPopover = styled(Popover)(({ theme }) => ({
   [`&.${popoverClasses.paper}`]: {
     backgroundColor: 'red',
     borderRadius: 14,
+  },
+}));
+
+const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  [`&.${linearProgressClasses.root}`]: {
+    width: '50%',
+    height: '0.5rem',
+    borderRadius: 50
   },
 }));
 
@@ -49,10 +57,9 @@ export default function App() {
 
       <main className='w-full flex flex-col'>
         <div className='w-full mt-10 mb-5 flex items-center justify-center'>
-          <LinearProgress
+          <StyledLinearProgress
             variant="determinate"
             value={10}
-            className='w-1/2 h-2 rounded'
             style={auth ? {marginRight: '-64px', marginLeft: 'auto'} : {}}
           />
           {auth && (
@@ -90,7 +97,7 @@ export default function App() {
         </div>
 
         <div className='flex flex-1 flex-col items-center'>
-          <h1 className='text-dark_blue-100 text-3xl font-semibold tracking-[-1px]'>Create a Fund</h1>
+          <h1 className='text-dark_blue-100 text-3xl font-semibold tracking-[-1px]'>Create a Funds</h1>
 
           <div className='flex flex-col flex-1 items-center p-6 mt-6'>
             {!auth && (
