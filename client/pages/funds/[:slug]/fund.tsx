@@ -144,7 +144,7 @@ export const Fund = () => {
               </Select>
             </StyledFormControl>
           </div>
-          <div className='w-full px-6 my-5 mt-20'>
+          <div className='w-full px-6 my-5 mt-5'>
             <button
               className='bg-blue-100 w-full h-14 rounded-2xl text-white font-medium leading-6 tracking-[-0.3px] disabled:opacity-50'
               disabled={form.disabled}
