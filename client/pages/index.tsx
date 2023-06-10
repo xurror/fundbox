@@ -14,6 +14,7 @@ import ViewIcon from '@mui/icons-material/FolderOpenOutlined';
 import Link from 'next/link';
 import Popover, {popoverClasses} from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
+import { useAuth } from '../utils/hooks';
 
 const StyledPopover = styled(Popover)(({ theme }) => ({
   [`&.${popoverClasses.paper}`]: {
@@ -35,6 +36,7 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
 }));
 
 export default function App() {
+  const [token] = useAuth({reroute: false});
   const [auth, setAuth] = useState(false)
   const [visible, setVisible] = useState(false)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -51,6 +53,7 @@ export default function App() {
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
 
+  console.log({token})
   return (
     <div className="h-screen min-h-screen flex bg-white">
       <Head>
@@ -64,9 +67,9 @@ export default function App() {
           <StyledLinearProgress
             variant="determinate"
             value={10}
-            style={auth ? {marginRight: '-64px', marginLeft: 'auto'} : {}}
+            style={token && token.length > 0 ? {marginRight: '-64px', marginLeft: 'auto'} : {}}
           />
-          {auth && (
+          {token && token.length > 0 && (
             <div className='ml-auto mr-6'>
               <button aria-describedby={id} onClick={handleClick} className='flex items-center justify-center bg-blue-10 h-10 w-10 rounded-full'>
                 <PersonIcon className='text-blue-100 w-7 h-7' />
@@ -104,18 +107,20 @@ export default function App() {
           <h1 className='text-dark_blue-100 text-3xl font-semibold tracking-[-1px]'>Create a Fund</h1>
 
           <div className='flex flex-col flex-1 items-center p-6 mt-6'>
-            {!auth && (
+            {!token && (
               <div className='bg-blue-100 p-6 rounded-[40px] h-56 flex flex-col items-center mb-5 w-full'>
                 <h3 className='text-white text-2xl font-semibold text-center leading-8 mb-1'>Already have a fund.</h3>
                 <p className='text-white-80 text-center leading-6 text-sm tracking-[-0.3px] px-1'>Login to track fund progress, see contributors and other information.</p>
 
                 <div className='flex flex-1 justify-center items-end'>
-                  <button onClick={() => setAuth(true)} className='flex justify-center items-center'>
-                    <div className='flex items-center justify-center bg-white-10 h-14 w-14 rounded-full mr-2'>
-                      <LoginIcon className='text-white w-6 h-6' />
-                    </div>
-                    <span className='text-white font-medium leading-7 tracking-[-0.4px]'>Login</span>
-                  </button>
+                  <Link href='/login'>
+                    <button className='flex justify-center items-center'>
+                        <div className='flex items-center justify-center bg-white-10 h-14 w-14 rounded-full mr-2'>
+                          <LoginIcon className='text-white w-6 h-6' />
+                        </div>
+                        <span className='text-white font-medium leading-7 tracking-[-0.4px]'>Login</span>
+                    </button>
+                  </Link>
                 </div>
               </div>
             )}

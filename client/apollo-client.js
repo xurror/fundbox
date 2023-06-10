@@ -1,7 +1,24 @@
-import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from '@apollo/client/link/context';
+import { BASE_URL, TOKEN } from './utils/constants';
+
+const httpLink = createHttpLink({
+  uri: `${BASE_URL}/graphiql`,
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem(TOKEN);
+
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
 
 const client = new ApolloClient({
-    uri: "https://countries.trevorblades.com", // Dummy data gotten from country api
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
 });
 

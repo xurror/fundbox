@@ -9,6 +9,7 @@ import Paper, { paperClasses } from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
+import { useAuth } from '../../utils/hooks';
 
 function createData(
   name: string,
@@ -61,6 +62,8 @@ const StyledTableHeaderCell = styled(TableCell)(({ theme }) => ({
 }));
 
 export const Funds = () => {
+  const [token] = useAuth({reroute: true});
+
   return (
     <div className="h-screen min-h-screen flex bg-white">
       <Head>

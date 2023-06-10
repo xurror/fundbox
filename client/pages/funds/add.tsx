@@ -5,6 +5,7 @@ import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
 import FormControl, {formControlClasses} from '@mui/material/FormControl';
 import TextField, {textFieldClasses} from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
+import { useAuth } from '../../utils/hooks';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -30,6 +31,8 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 export default function Add() {
+  const [token] = useAuth({reroute: true});
+  
   const [form, setForm] = useState({
     name: '',
     description: '',

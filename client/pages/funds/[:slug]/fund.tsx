@@ -8,6 +8,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import TextField, {textFieldClasses} from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
+import { useAuth } from '../../../utils/hooks';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -32,6 +33,8 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 export const Fund = () => {
+  const [token] = useAuth({reroute: true});
+  
   const [form, setForm] = useState({
     name: '',
     amount: '',
