@@ -5,7 +5,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl, {formControlClasses} from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
+import TextField, {textFieldClasses} from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
 
@@ -22,6 +22,12 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
   [`&.${formControlClasses.root}`]: {
     width: '100%',
     marginBottom: '1rem'
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  [`&.${textFieldClasses.root}`]: {
+    borderRadius: '12px',
   },
 }));
 
@@ -85,7 +91,7 @@ export const Fund = () => {
 
           <div className='w-full p-6 mt-6 mx-6'>
             <StyledFormControl>
-              <TextField 
+              <StyledTextField 
                 id="outlined-basic" 
                 label="Name"
                 variant="outlined"
@@ -96,7 +102,7 @@ export const Fund = () => {
             </StyledFormControl>
 
             <StyledFormControl>
-              <TextField 
+              <StyledTextField 
                 id="outlined-basic" 
                 label="Nmber"
                 variant="outlined"
@@ -107,7 +113,7 @@ export const Fund = () => {
             </StyledFormControl>
 
             <StyledFormControl>
-              <TextField 
+              <StyledTextField 
                 id="outlined-basic" 
                 label="Amount"
                 variant="outlined"

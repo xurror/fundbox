@@ -3,7 +3,7 @@ import Head from 'next/head'
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
 import FormControl, {formControlClasses} from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
+import TextField, {textFieldClasses} from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
@@ -18,7 +18,14 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   [`&.${formControlClasses.root}`]: {
     width: '100%',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    borderRadius: '12px',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  [`&.${textFieldClasses.root}`]: {
+    borderRadius: '12px',
   },
 }));
 
@@ -80,7 +87,7 @@ export default function Add() {
 
           <div className='w-full p-6 mt-6 mx-6'>
             <StyledFormControl>
-              <TextField 
+              <StyledTextField 
                 id="outlined-basic" 
                 label="Name"
                 variant="outlined"
@@ -91,7 +98,7 @@ export default function Add() {
             </StyledFormControl>
 
             <StyledFormControl>
-              <TextField 
+              <StyledTextField 
                 id="outlined-basic" 
                 label="Description"
                 variant="outlined"
