@@ -28,7 +28,7 @@ type RouterConfig struct {
 func CorsConfig() cors.Config {
 	return cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"OPTION", "GET", "POST", "PUT", "PATCH"},
+		AllowMethods:     []string{"OPTIONS", "GET", "POST", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
