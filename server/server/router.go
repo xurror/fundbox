@@ -5,6 +5,7 @@ import (
 	"getting-to-go/model"
 	"getting-to-go/server/middleware"
 	"getting-to-go/service"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ func NewRouter(c *RouterConfig) *gin.Engine {
 	r.Use(location.Default())
 	r.Use(middleware.TimeoutMiddleware())
 	//r.Use(secure.New(SecureConfig()))
-	//r.Use(cors.New(CorsConfig()))
+	r.Use(cors.New(CorsConfig()))
 
 	authMiddleware := middleware.GetAuthMiddleware(model.DB())
 	userService := service.NewUserService()
