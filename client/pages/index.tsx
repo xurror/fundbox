@@ -15,6 +15,7 @@ import Link from 'next/link';
 import Popover, {popoverClasses} from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../utils/hooks';
+import { TOKEN } from '../utils/constants';
 
 const StyledPopover = styled(Popover)(({ theme }) => ({
   [`&.${popoverClasses.paper}`]: {
@@ -36,7 +37,7 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
 }));
 
 export default function App() {
-  const [token] = useAuth({reroute: false});
+  const {token, refresh} = useAuth();
   const [auth, setAuth] = useState(false)
   const [visible, setVisible] = useState(false)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -45,6 +46,11 @@ export default function App() {
     console.log("clicked")
     setAnchorEl(event.currentTarget);
   };
+
+  const logout = () => {
+    localStorage.removeItem(TOKEN);
+    refresh()
+  }
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -94,7 +100,7 @@ export default function App() {
                       <ViewIcon className='text-blue-100 w-5 h-5 mr-3' /><span>View Funds</span>
                     </Link>
                   </button>
-                  <button className='w-full text-start px-4 text-blue-100 font-semibold h-10 flex items-center'>
+                  <button onClick={() => logout()} className='w-full text-start px-4 text-blue-100 font-semibold h-10 flex items-center'>
                     <LogoutIcon className='text-blue-100 w-5 h-5 mr-3' /><span>Log out</span>
                   </button>
                 </div>

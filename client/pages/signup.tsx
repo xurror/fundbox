@@ -75,6 +75,7 @@ export const Signup = () => {
   }
 
   const login = async () => {
+    const query = router.query;
     try {
       const { password, email } = form;
       const url = `${process.env.BASE_URL}/auth/login`;
@@ -95,7 +96,7 @@ export const Signup = () => {
       console.log({data})
       setLoading(false)
       setDisabled(false)
-      router.push('/')
+      router.push(`/${query?.to ? query.to : ''}`);
     } catch (error) {
       console.log({error})
       window.alert(error)
@@ -179,7 +180,7 @@ export const Signup = () => {
             className='w-full h-14 flex justify-center items-center rounded-2xl text-dark_blue-100 leading-6 tracking-[-0.3px] disabled:opacity-50'
           >
             <span className='mr-1'>Have an account?</span>
-            <Link href='/login'>
+            <Link href={`/login${router.query?.to ? `?to=${router.query.to}` : ''}`}>
               <button
                 className='text-blue-100 font-medium '
                 disabled={disabled}

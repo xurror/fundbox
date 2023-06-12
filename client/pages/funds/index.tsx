@@ -10,6 +10,7 @@ import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
 import { useAuth } from '../../utils/hooks';
+import { useRouter } from "next/router";
 
 function createData(
   name: string,
@@ -62,7 +63,8 @@ const StyledTableHeaderCell = styled(TableCell)(({ theme }) => ({
 }));
 
 export const Funds = () => {
-  const [token] = useAuth({reroute: true});
+  const router = useRouter();
+  const {token} = useAuth({reroute: true, from: router.asPath});
 
   return (
     <div className="h-screen min-h-screen flex bg-white">

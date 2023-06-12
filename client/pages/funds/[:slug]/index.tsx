@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
@@ -9,6 +9,9 @@ import Paper, { paperClasses } from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
+import dynamic from 'next/dynamic'
+
+import { useAuth } from '../../../utils/hooks';
 
 function createData(
   name: string,
@@ -61,6 +64,8 @@ const StyledTableHeaderCell = styled(TableCell)(({ theme }) => ({
 }));
 
 export const FundDetails = () => {
+  const {token} = useAuth({reroute: true, from: window.location.pathname });
+
   return (
     <div className="h-screen min-h-screen flex bg-white">
       <Head>
@@ -110,4 +115,6 @@ export const FundDetails = () => {
   )
 }
 
-export default FundDetails;
+export default dynamic(() => Promise.resolve(FundDetails), {
+  ssr: false
+});

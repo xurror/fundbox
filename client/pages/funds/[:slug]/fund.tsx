@@ -9,6 +9,7 @@ import TextField, {textFieldClasses} from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../../../utils/hooks';
+import { useRouter } from "next/router";
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -33,7 +34,8 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 export const Fund = () => {
-  const [token] = useAuth({reroute: true});
+  const router = useRouter();
+  const {token} = useAuth({reroute: true, from: router.asPath});
   
   const [form, setForm] = useState({
     name: '',
