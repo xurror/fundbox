@@ -4,7 +4,6 @@ import (
 	"getting-to-go/config"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/secure"
-	"time"
 )
 
 type Config struct {
@@ -26,17 +25,7 @@ type RouterConfig struct {
 }
 
 func CorsConfig() cors.Config {
-	return cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"OPTION", "GET", "POST", "PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		//AllowOriginFunc: func(origin string) bool {
-		//	return origin == "*"
-		//},
-		MaxAge: 12 * time.Hour,
-	}
+	return cors.DefaultConfig()
 }
 
 func SecureConfig() secure.Config {
