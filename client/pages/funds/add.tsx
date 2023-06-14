@@ -5,8 +5,11 @@ import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
 import FormControl, {formControlClasses} from '@mui/material/FormControl';
 import TextField, {textFieldClasses} from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
-import { useAuth } from '../../utils/hooks';
+import { useQuery, gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { useAuth } from '../../utils/hooks';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -31,6 +34,18 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
+const QUERY = gql`
+  mutation startFund(
+    input: {
+    reason: "Bossmans Birthday",
+    description:"Planning bossman's suprise party"
+  }) {
+    id,
+    reason,
+    description
+  }
+`;
+
 export default function Add() {
   const router = useRouter();
   const {token} = useAuth({reroute: true, from: router.asPath});
@@ -43,6 +58,15 @@ export default function Add() {
   const [link, setLink] = useState('');
   const [progress, setProgress] = useState(20);
 
+  const [startFund, { data, loading, error}] = useMutation(QUERY, {
+    variables: {
+      input: {
+        reason: form.name,
+        description: form.description
+      }
+    },
+  });
+
   const create = () => {
     const name = form.name;
     const parsedName = name.toLowerCase().replace(/[^A-Z0-9]+/ig, "_");
@@ -52,7 +76,8 @@ export default function Add() {
     let _form: any = {...form}
     _form.disabled = true;
     setForm(_form);
-    setProgress(85)
+    setProgress(85);
+    startFund()
   }
   const copyToClipboard = () => {
     if (link.length > 0) {
@@ -67,6 +92,8 @@ export default function Add() {
     _form[field] = value.target.value
     setForm(_form)
   }
+
+  if (error) return window.alert(error.message);
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -128,9 +155,14 @@ export default function Add() {
           <div className='w-full px-6 my-5 mt-20'>
             <button
               className='bg-blue-100 w-full h-14 rounded-2xl text-white font-medium leading-6 tracking-[-0.3px] disabled:opacity-50'
-              disabled={form.disabled}
+              disabled={form.disabled || loading}
               onClick={() => create()}
-            >Create fund</button>
+            >
+              <span className='mr-4'>Create fund</span>
+              {loading && (
+                <CircularProgress size={20} color='inherit' />
+              )}
+            </button>
           </div>
         </div>
       </main>
