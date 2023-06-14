@@ -40,11 +40,7 @@ export const login = () => {
   
   const login = async () => {
     const query = router.query;
-    localStorage.setItem(TOKEN, 'data.token');
-    router.push(`/${query?.to ? query.to : ''}`);
-    return
-    setLoading(true)
-    setDisabled(true)
+
     try {
       const { password, email } = form;
       const url = `${BASE_URL}/auth/login`;
@@ -62,7 +58,7 @@ export const login = () => {
       const data = await response.json();
 
       localStorage.setItem(TOKEN, data.token);
-      router.push('/');
+      router.push(`/${query?.to ? query.to : ''}`);
     } catch (error) {
       console.log({error})
       window.alert(error)
