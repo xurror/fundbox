@@ -21,6 +21,14 @@ func NewRouter(c *RouterConfig) *gin.Engine {
 	//r.Use(secure.New(SecureConfig()))
 	// r.Use(cors.New(CorsConfig()))
 
+	r.Use(func(c *gin.Context) {
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+
 	authMiddleware := middleware.GetAuthMiddleware(model.DB())
 	userService := service.NewUserService()
 	authService := service.NewAuthService(userService)
