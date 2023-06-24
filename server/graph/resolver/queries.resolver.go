@@ -8,48 +8,45 @@ import (
 	"context"
 	"fmt"
 	"getting-to-go/graph/generated"
-	models "getting-to-go/model"
-	utils "getting-to-go/util"
-	jwt "github.com/appleboy/gin-jwt/v2"
-
+	"getting-to-go/model"
+	"getting-to-go/util"
 	"github.com/google/uuid"
 )
 
 // Funds is the resolver for the funds field.
-func (r *queryResolver) Funds(ctx context.Context, limit *int, offset *int) ([]*models.Fund, error) {
+func (r *queryResolver) Funds(ctx context.Context, limit *int, offset *int) ([]*model.Fund, error) {
 	panic(fmt.Errorf("not implemented: Funds - funds"))
 }
 
 // Fund is the resolver for the fund field.
-func (r *queryResolver) Fund(ctx context.Context, id uuid.UUID) (*models.Fund, error) {
+func (r *queryResolver) Fund(ctx context.Context, id uuid.UUID) (*model.Fund, error) {
 	panic(fmt.Errorf("not implemented: Fund - fund"))
 }
 
 // FundContributions is the resolver for the fundContributions field.
-func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*models.Contribution, error) {
+func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error) {
 	panic(fmt.Errorf("not implemented: FundContributions - fundContributions"))
 }
 
 // CurrentUser is the resolver for the currentUser field.
-func (r *queryResolver) CurrentUser(ctx context.Context) (*models.User, error) {
-	c, _ := utils.GinContextFromContext(ctx)
-	claims := jwt.ExtractClaims(c)
-	return r.UserService.GetUser(uuid.MustParse(claims["id"].(string)))
+func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
+	user := ctx.Value("user")
+	return (user).(*model.User), nil
 }
 
 // User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (r *queryResolver) User(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	return r.UserService.GetUser(id)
 }
 
 // Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*models.User, error) {
-	return r.UserService.GetUsers(utils.GetLimitAndOffset(limit, offset))
+func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*model.User, error) {
+	return r.UserService.GetUsers(util.GetLimitAndOffset(limit, offset))
 }
 
 // UserContributions is the resolver for the userContributions field.
-func (r *queryResolver) UserContributions(ctx context.Context, userID uuid.UUID, limit *int, offset *int) ([]*models.Contribution, error) {
-	l, o := utils.GetLimitAndOffset(limit, offset)
+func (r *queryResolver) UserContributions(ctx context.Context, userID uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error) {
+	l, o := util.GetLimitAndOffset(limit, offset)
 	return r.contributionService.GetContributionsByUserID(userID, l, o)
 }
 

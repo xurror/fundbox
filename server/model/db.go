@@ -3,7 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
-	"getting-to-go/util"
+	_type "getting-to-go/type"
 	"net/http"
 	"time"
 
@@ -65,7 +65,7 @@ func HandleError(err error) error {
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return util.NewError(http.StatusNotFound, "Record not found")
+		return _type.NewErrorResponse(http.StatusNotFound, "Record not found")
 	}
-	return util.NewError(http.StatusInternalServerError, err.Error())
+	return _type.NewErrorResponse(http.StatusInternalServerError, err.Error())
 }

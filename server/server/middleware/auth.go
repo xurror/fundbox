@@ -1,15 +1,13 @@
 package middleware
 
 import (
+	"context"
 	"getting-to-go/model"
-	"getting-to-go/util"
-	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	_type "getting-to-go/type"
+	jwtauth "github.com/go-chi/jwtauth/v5"
+	"github.com/go-chi/render"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
-	"time"
 )
 
 type Login struct {
@@ -17,73 +15,30 @@ type Login struct {
 	Password string `json:"password" binding:"required"`
 }
 
-var identityKey = "id"
+func Verifier(ja *jwtauth.JWTAuth, db *gorm.DB) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tokenString := jwtauth.TokenFromHeader(r)
+			token, err := jwtauth.VerifyToken(ja, tokenString)
+			ctx := jwtauth.NewContext(r.Context(), token, err)
 
-func GetAuthMiddleware(db *gorm.DB) *jwt.GinJWTMiddleware {
-	m, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "test zone",
-		Key:         []byte("secret key"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
-		IdentityKey: identityKey,
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*model.User); ok {
-				return jwt.MapClaims{
-					identityKey: v.ID,
-				}
-			}
-			return jwt.MapClaims{}
-		},
-		IdentityHandler: func(c *gin.Context) interface{} {
-			claims := jwt.ExtractClaims(c)
-			id := uuid.MustParse(claims[identityKey].(string))
-			user := &model.User{}
-			db.First(&user, "id = ?", id)
-			return user
-		},
-		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var login Login
-			if err := c.ShouldBindJSON(&login); err != nil {
-				return "", jwt.ErrMissingLoginValues
+			if err != nil {
+				render.Render(w, r, _type.ErrInvalidRequest(err))
+				return
 			}
 
+			email, _ := token.Get("email")
 			user := &model.User{}
-			result := db.First(&user, "email = ?", login.Email)
+			result := db.First(&user, "email = ?", email)
 			if result.Error != nil {
-				return nil, util.NewError(http.StatusUnauthorized, jwt.ErrFailedAuthentication.Error())
+				render.Render(w, r, _type.ErrInvalidRequest(err))
+				return
 			}
 
-			// If the password does not match, return an error
-			if !util.CheckPasswordHash(user.Password, login.Password) {
-				return nil, util.NewError(http.StatusUnauthorized, "Invalid email or password")
-			}
-			return user, nil
-		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*model.User); ok && v.HasRoles([]model.Role{model.Initiator, model.Contributor}) {
-				return true
-			}
-
-			return false
-		},
-		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"message": message,
-			})
-		},
-		TokenLookup:   "header: Authorization",
-		TokenHeadName: "Bearer",
-		TimeFunc:      time.Now,
-	})
-
-	if err != nil {
-		log.Fatal("JWT Error:" + err.Error())
+			// Add the user to the context
+			ctx = context.WithValue(ctx, "userId", user.ID)
+			ctx = context.WithValue(ctx, "user", user)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
-
-	errInit := m.MiddlewareInit()
-
-	if errInit != nil {
-		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
-	}
-	return m
 }

@@ -3,7 +3,6 @@ package graph
 import (
 	"context"
 	"getting-to-go/model"
-	"getting-to-go/util"
 	"github.com/99designs/gqlgen/graphql"
 	"log"
 )
@@ -27,13 +26,8 @@ import (
 //}
 
 func HasRolesDirective(ctx context.Context, obj interface{}, next graphql.Resolver, roles []model.Role) (res interface{}, err error) {
-	ginCtx, err := util.GinContextFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if ginCtx == nil {
-		log.Panic(ginCtx)
-	}
+	user := ctx.Value("user").(*model.User)
+	log.Panic(user)
 	//claims := jwt.ExtractClaims(ginCtx)
 	//user, _ := next.
 	//if !middleware.ForContext(ctx).HasRoles(roles) {
