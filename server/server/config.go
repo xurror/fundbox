@@ -2,10 +2,7 @@ package server
 
 import (
 	"getting-to-go/config"
-	"time"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/secure"
+	"github.com/go-chi/cors"
 )
 
 type Config struct {
@@ -26,32 +23,17 @@ type RouterConfig struct {
 	DisableAuth bool
 }
 
-func CorsConfig() cors.Config {
-	return cors.Config{
-		AllowAllOrigins: true,
-		// AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"*"},
-		ExposeHeaders:    []string{"*"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-		//AllowOriginFunc: func(origin string) bool {
-		//	return origin == "*"
-		//},
-	}
-}
-
-func SecureConfig() secure.Config {
-	return secure.Config{
-		//SSLRedirect:           false,
-		//IsDevelopment:         false,
-		//STSSeconds:            315360000,
-		//STSIncludeSubdomains:  false,
-		//FrameDeny:             false,
-		//ContentTypeNosniff:    false,
-		//BrowserXssFilter:      false,
-		//ContentSecurityPolicy: "",
-		//IENoOpen:              false,
-		//SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+func CorsOptions() cors.Options {
+	// Basic CORS
+	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
+	return cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}
 }

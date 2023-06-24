@@ -9,12 +9,17 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
+	"net/http"
 )
 
-func graphqlHandler() gin.HandlerFunc {
+// Defining the Playground handler
+func graphiQlHandler(name, pattern string) http.HandlerFunc {
+	return playground.Handler(name, pattern)
+}
+
+func graphqlHandler() *handler.Server {
 	userService := service.NewUserService()
 	authService := service.NewAuthService(userService)
 	c := generated.Config{Resolvers: &resolver.Resolver{
@@ -42,16 +47,5 @@ func graphqlHandler() gin.HandlerFunc {
 		}
 	})
 
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
-// Defining the Playground handler
-func playgroundHandler() gin.HandlerFunc {
-	h := playground.Handler("GraphQL Playground", "/graphql")
-
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
+	return h
 }

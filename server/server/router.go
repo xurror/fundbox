@@ -1,51 +1,41 @@
 package server
 
 import (
+	"flag"
 	"getting-to-go/controller"
 	"getting-to-go/model"
-	"getting-to-go/server/middleware"
+	fmiddleware "getting-to-go/server/middleware"
 	"getting-to-go/service"
-
-	"github.com/gin-contrib/location"
-	"github.com/gin-contrib/requestid"
-	"github.com/gin-gonic/gin"
+	chi "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	jwtauth "github.com/go-chi/jwtauth/v5"
+	"time"
 )
 
-func NewRouter(c *RouterConfig) *gin.Engine {
-	r := gin.Default()
+func NewRouter() chi.Router {
+	flag.Parse()
+	r := chi.NewRouter()
 
-	r.Use(middleware.GinContextToContextMiddleware())
-	r.Use(requestid.New())
-	r.Use(location.Default())
-	r.Use(middleware.TimeoutMiddleware())
-	//r.Use(secure.New(SecureConfig()))
-	// r.Use(cors.New(CorsConfig()))
+	// A good base middleware stack
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(cors.Handler(CorsOptions()))
 
-	r.Use(func(c *gin.Context) {
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
-
-	authMiddleware := middleware.GetAuthMiddleware(model.DB())
 	userService := service.NewUserService()
 	authService := service.NewAuthService(userService)
 	authController := controller.NewAuthController(authService)
 
-	auth := r.Group("/auth")
-	authController.Register(auth, authMiddleware.LoginHandler)
-
-	r.GET("/graphiql", playgroundHandler())
-
-	// Secured routes
-	if !c.DisableAuth {
-		r.Use(authMiddleware.MiddlewareFunc())
-	}
-
-	r.POST("/auth/refresh_token", authMiddleware.RefreshHandler)
-	r.POST("/graphql", graphqlHandler())
+	r.Route("/auth", authController.Register())
+	r.Handle("/graphiql", graphiQlHandler("Fund Box", "/query"))
+	r.Group(func(r chi.Router) {
+		r.Use(fmiddleware.Verifier(jwtauth.New("HS256", []byte("secret"), nil), model.DB()))
+		r.Use(jwtauth.Authenticator)
+		r.Handle("/query", graphqlHandler())
+	})
 
 	return r
 }

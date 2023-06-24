@@ -2,8 +2,8 @@ package service
 
 import (
 	models "getting-to-go/model"
+	_type "getting-to-go/type"
 	utils "getting-to-go/util"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
@@ -25,24 +25,22 @@ func (s *AuthService) Authenticate(email, password string) (*models.User, error)
 		return nil, err
 	}
 
-	// If the user does not exist, return an error
 	if user == nil {
-		return nil, utils.NewError(http.StatusUnauthorized, "Invalid email or password")
+		return nil, _type.NewErrorResponse(http.StatusUnauthorized, "invalid email or password")
 	}
 
-	// If the password does not match, return an error
 	if !utils.CheckPasswordHash(user.Password, password) {
-		return nil, utils.NewError(http.StatusUnauthorized, "Invalid email or password")
+		return nil, _type.NewErrorResponse(http.StatusUnauthorized, "invalid email or password")
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) SignUp(c *gin.Context, firstName, lastName, email, password string, roles []string) (*models.User, error) {
+func (s *AuthService) SignUp(firstName, lastName, email, password string, roles []string) (*models.User, error) {
 	_, err := models.GetUserByEmail(email)
 	if err == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email Already Exists"})
-		log.Panic(err)
+		log.Print(err)
+		return nil, _type.NewErrorResponse(http.StatusConflict, "email already exists")
 	}
 
 	return s.userService.CreateUser(firstName, lastName, email, password, roles)
