@@ -1,46 +1,75 @@
 package service
 
 import (
-	models "getting-to-go/model"
+	"getting-to-go/config"
+	"getting-to-go/model"
 	_type "getting-to-go/type"
-	utils "getting-to-go/util"
-	"log"
+	"getting-to-go/util"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type AuthService struct {
+	log         *logrus.Logger
+	config      *config.AppConfig
 	userService *UserService
 }
 
-// NewAuthService creates a new AuthService instance
-func NewAuthService(userService *UserService) *AuthService {
-	return &AuthService{userService}
+func NewAuthService(log *logrus.Logger, config *config.AppConfig, userService *UserService) *AuthService {
+	return &AuthService{
+		log:         log,
+		config:      config,
+		userService: userService,
+	}
 }
 
-// Authenticate authenticates a user by email and password
-func (s *AuthService) Authenticate(email, password string) (*models.User, error) {
-	// Get the user by email
-	user, err := models.GetUserByEmail(email)
+func (s *AuthService) Authenticate(email, password string) (*model.User, error) {
+	user, err := s.userService.GetUserByEmail(email)
 	if err != nil {
+		log.Debug(err.Error())
 		return nil, err
 	}
 
 	if user == nil {
-		return nil, _type.NewErrorResponse(http.StatusUnauthorized, "invalid email or password")
+		return nil, _type.NewAppError(http.StatusUnauthorized, "invalid email or password")
 	}
 
-	if !utils.CheckPasswordHash(user.Password, password) {
-		return nil, _type.NewErrorResponse(http.StatusUnauthorized, "invalid email or password")
+	if !util.CheckPasswordHash(user.Password, password) {
+		return nil, _type.NewAppError(http.StatusUnauthorized, "invalid email or password")
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) SignUp(firstName, lastName, email, password string, roles []string) (*models.User, error) {
-	_, err := models.GetUserByEmail(email)
+func (s *AuthService) Authorize(c echo.Context, tokenString string) (interface{}, error) {
+	var options []jwt.ParseOption
+	options = append(options, jwt.WithToken(jwt.New()))
+	options = append(options, jwt.WithVerify(true))
+	options = append(options, jwt.WithKey(jwa.HS256, []byte(s.config.Jwt.SigningKey)))
+	options = append(options, jwt.WithValidate(true))
+
+	token, err := jwt.ParseString(tokenString, options...)
+	if err != nil {
+		log.Debug(err.Error())
+		return nil, echo.ErrUnauthorized
+	}
+
+	user, err := s.userService.GetUserByEmail(token.Subject())
+	if err != nil {
+		log.Debug(err.Error())
+		return nil, echo.ErrUnauthorized
+	}
+	return user, nil
+}
+
+func (s *AuthService) SignUp(firstName, lastName, email, password string, roles []model.Role) (*model.User, error) {
+	_, err := s.userService.GetUserByEmail(email)
 	if err == nil {
-		log.Print(err)
-		return nil, _type.NewErrorResponse(http.StatusConflict, "email already exists")
+		return nil, _type.NewAppError(http.StatusConflict, "email already exists")
 	}
 
 	return s.userService.CreateUser(firstName, lastName, email, password, roles)

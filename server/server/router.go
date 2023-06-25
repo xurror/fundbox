@@ -1,41 +1,38 @@
 package server
 
 import (
-	"flag"
+	appContext "getting-to-go/context"
 	"getting-to-go/controller"
-	"getting-to-go/model"
-	fmiddleware "getting-to-go/server/middleware"
 	"getting-to-go/service"
-	chi "github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
-	jwtauth "github.com/go-chi/jwtauth/v5"
-	"time"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 )
 
-func NewRouter() chi.Router {
-	flag.Parse()
-	r := chi.NewRouter()
+func NewRouter(
+	log *logrus.Logger,
+	graphQl *GraphQlHandler,
+	authService *service.AuthService,
+	authController *controller.AuthController,
+) *echo.Echo {
+	e := echo.New()
+	e.Use(middleware.RequestLoggerWithConfig(RequestLoggerConfig(log)))
+	e.Use(middleware.Recover())
+	e.Use(middleware.RequestID())
+	e.Use(middleware.CORSWithConfig(CorsConfig()))
+	e.Use(middleware.TimeoutWithConfig(TimeoutConfig()))
+	e.Use(middleware.BodyLimit("2M"))
+	e.Use(appContext.RegisterAppContext())
+	//e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+	//}))
 
-	// A good base middleware stack
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
-	r.Use(cors.Handler(CorsOptions()))
+	authGroup := e.Group("/auth")
+	authController.Register(authGroup)
 
-	userService := service.NewUserService()
-	authService := service.NewAuthService(userService)
-	authController := controller.NewAuthController(authService)
+	e.GET("/graphiql", graphQl.GraphiQlHandler("Fund Box", "/gql/query"))
+	graphql := e.Group("/gql", echojwt.WithConfig(JwtConfig(authService)))
+	graphql.POST("/query", graphQl.QueryHandler())
 
-	r.Route("/auth", authController.Register())
-	r.Handle("/graphiql", graphiQlHandler("Fund Box", "/query"))
-	r.Group(func(r chi.Router) {
-		r.Use(fmiddleware.Verifier(jwtauth.New("HS256", []byte("secret"), nil), model.DB()))
-		r.Use(jwtauth.Authenticator)
-		r.Handle("/query", graphqlHandler())
-	})
-
-	return r
+	return e
 }

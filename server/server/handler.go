@@ -9,22 +9,38 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/labstack/echo/v4"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
-	"net/http"
 )
 
-// Defining the Playground handler
-func graphiQlHandler(name, pattern string) http.HandlerFunc {
-	return playground.Handler(name, pattern)
+type GraphQlHandler struct {
+	userService *service.UserService
+	authService *service.AuthService
 }
 
-func graphqlHandler() *handler.Server {
-	userService := service.NewUserService()
-	authService := service.NewAuthService(userService)
+func NewGraphQlHandler(
+	userService *service.UserService,
+	authService *service.AuthService,
+) *GraphQlHandler {
+	return &GraphQlHandler{
+		userService: userService,
+		authService: authService,
+	}
+}
+
+func (*GraphQlHandler) GraphiQlHandler(name, pattern string) echo.HandlerFunc {
+	h := playground.Handler(name, pattern)
+	return func(c echo.Context) error {
+		h.ServeHTTP(c.Response(), c.Request())
+		return nil
+	}
+}
+
+func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 	c := generated.Config{Resolvers: &resolver.Resolver{
-		UserService: *userService,
-		AuthService: *authService,
+		UserService: g.userService,
+		AuthService: g.authService,
 	}}
 
 	c.Directives.HasRoles = graph.HasRolesDirective
@@ -47,5 +63,8 @@ func graphqlHandler() *handler.Server {
 		}
 	})
 
-	return h
+	return func(c echo.Context) error {
+		h.ServeHTTP(c.Response(), c.Request())
+		return nil
+	}
 }

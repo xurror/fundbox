@@ -1,30 +1,44 @@
 package main
 
 import (
-	"fmt"
 	"getting-to-go/config"
+	"getting-to-go/controller"
+	"getting-to-go/logging"
 	"getting-to-go/model"
 	"getting-to-go/server"
-	"log"
+	"getting-to-go/service"
+	log "github.com/sirupsen/logrus"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
+	"net/http"
 )
 
 func main() {
-	c, err := config.LoadConfig("./config/config.yaml")
-	if err != nil {
-		fmt.Println(err)
-	}
+	app := fx.New(
+		fx.WithLogger(func(logger *log.Logger) fxevent.Logger {
+			return &logging.AppLogger{Logger: logger}
+		}),
+		fx.Provide(
+			model.NewDB,
+			logging.NewLogger,
+			config.NewAppConfig,
+		),
+		fx.Provide(
+			service.NewUserService,
+			service.NewAuthService,
+			service.NewContributionService,
+			service.NewFundService,
+		),
+		fx.Provide(
+			controller.NewAuthController,
+		),
+		fx.Provide(
+			server.NewGraphQlHandler,
+			server.NewServer,
+			server.NewRouter,
+		),
+		fx.Invoke(func(*http.Server) {}),
+	)
 
-	err = model.Connect(c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	model.RunMigrations()
-
-	s, err := server.NewServer(server.NewConfig(c))
-	if err != nil {
-		log.Panic("Failed To Start Server:", err)
-	}
-
-	s.Run()
+	app.Run()
 }

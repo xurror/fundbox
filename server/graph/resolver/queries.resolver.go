@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	appContext "getting-to-go/context"
 	"getting-to-go/graph/generated"
 	"getting-to-go/model"
 	"getting-to-go/util"
@@ -30,7 +31,8 @@ func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	user := ctx.Value("user")
+	ec := appContext.AcquireAppContext(ctx)
+	user := ec.Get("user")
 	return (user).(*model.User), nil
 }
 

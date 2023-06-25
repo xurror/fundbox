@@ -1,74 +1,86 @@
 package controller
 
 import (
-	"errors"
+	"getting-to-go/config"
+	"getting-to-go/model"
 	"getting-to-go/service"
 	_type "getting-to-go/type"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
-	"github.com/go-chi/render"
-	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
 
-// AuthController provides user-related endpoints
 type AuthController struct {
+	log         *logrus.Logger
+	config      *config.AppConfig
 	authService *service.AuthService
 }
 
-// NewAuthController creates a new AuthController instance
-func NewAuthController(authService *service.AuthService) *AuthController {
+func NewAuthController(log *logrus.Logger, config *config.AppConfig, authService *service.AuthService) *AuthController {
 	return &AuthController{
+		log:         log,
+		config:      config,
 		authService: authService,
 	}
 }
 
-func (c *AuthController) Register() func(r chi.Router) {
-	return func(r chi.Router) {
-		r.Post("/login", c.login)
-		r.Post("/signup", c.signUp)
-	}
+func (a *AuthController) Register(g *echo.Group) {
+	g.POST("/login", a.login)
+	g.POST("/signup", a.signUp)
 }
 
-func (c *AuthController) login(w http.ResponseWriter, r *http.Request) {
-	login := &LoginRequest{}
-	if err := render.Bind(r, login); err != nil {
-		render.Render(w, r, _type.ErrInvalidRequest(err))
-		return
+func (a *AuthController) login(c echo.Context) error {
+	req := &LoginRequest{}
+	if err := c.Bind(req); err != nil {
+		log.Debug(err.Error())
+		return echo.ErrBadRequest
 	}
 
-	user, err := c.authService.Authenticate(login.Email, login.Password)
+	user, err := a.authService.Authenticate(req.Email, req.Password)
 	if err != nil {
-		render.Render(w, r, _type.ErrUnauthorized(err))
-		return
+		log.Debug(err.Error())
+		return echo.ErrUnauthorized
 	}
 
 	now := time.Now()
-	tokenAuth := jwtauth.New("HS256", []byte("secret"), nil)
-	token, tokenString, _ := tokenAuth.Encode(map[string]interface{}{
-		"user_id": user.ID,
-		"email":   user.Email,
-		"exp":     now.Add(time.Minute * 15).Unix(),
-		"iat":     now.Unix(),
-	})
 
-	render.Status(r, http.StatusOK)
-	render.Render(w, r, &JwtResponse{
+	token, err := jwt.NewBuilder().
+		Issuer("fundbox").
+		IssuedAt(now).
+		Expiration(now.Add(a.config.Jwt.Expiration)).
+		Subject(user.Email).
+		JwtID(user.ID.String()).
+		Build()
+	if err != nil {
+		log.Debug(err.Error())
+		return echo.ErrInternalServerError
+	}
+
+	tokenString, err := jwt.Sign(token, jwt.WithKey(jwa.HS256, []byte(a.config.Jwt.SigningKey)))
+	if err != nil {
+		log.Debug(err.Error())
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, &JwtResponse{
 		Code:   http.StatusOK,
 		Expire: token.Expiration(),
-		Token:  tokenString,
+		Token:  string(tokenString[:]),
 	})
 }
 
-func (c *AuthController) signUp(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) signUp(c echo.Context) error {
 	req := &SignUpRequest{}
-	if err := render.Bind(r, req); err != nil {
-		render.Render(w, r, _type.ErrInvalidRequest(err))
-		return
+	if err := c.Bind(req); err != nil {
+		log.Debug(err.Error())
+		return echo.ErrBadRequest
 	}
 
-	user, err := c.authService.SignUp(
+	user, err := a.authService.SignUp(
 		req.FirstName,
 		req.LastName,
 		req.Email,
@@ -76,23 +88,16 @@ func (c *AuthController) signUp(w http.ResponseWriter, r *http.Request) {
 		req.Roles,
 	)
 	if err != nil {
+		log.Debug(err.Error())
 		switch e := err.(type) {
-		case _type.ErrResponse:
-			render.Render(w, r, _type.AppErrRender(e))
+		case *_type.AppError:
+			return echo.NewHTTPError(e.Code, e.Message)
 		default:
-			render.Render(w, r, _type.ErrInternal(err))
+			return echo.ErrInternalServerError
 		}
-		return
 	}
 
-	render.Status(r, http.StatusCreated)
-	render.Render(w, r, &UserResponse{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Roles:     user.Roles,
-	})
+	return c.JSON(http.StatusCreated, &user)
 }
 
 type LoginRequest struct {
@@ -100,58 +105,16 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (l *LoginRequest) Bind(r *http.Request) error {
-	if l.Email == "" {
-		return errors.New("email is required")
-	}
-	if l.Password == "" {
-		return errors.New("password is required")
-	}
-	return nil
+type SignUpRequest struct {
+	FirstName string       `json:"first_name" binding:"required"`
+	LastName  string       `json:"last_name" binding:"required"`
+	Email     string       `json:"email" binding:"required,email"`
+	Password  string       `json:"password" binding:"required,min=6"`
+	Roles     []model.Role `json:"roles" binding:"required"`
 }
 
 type JwtResponse struct {
 	Code   int       `json:"code"`
 	Expire time.Time `json:"expire"`
 	Token  string    `json:"token"`
-}
-
-func (j *JwtResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
-type SignUpRequest struct {
-	FirstName string   `json:"first_name" binding:"required"`
-	LastName  string   `json:"last_name" binding:"required"`
-	Email     string   `json:"email" binding:"required,email"`
-	Password  string   `json:"password" binding:"required,min=6"`
-	Roles     []string `json:"roles" binding:"required"`
-}
-
-func (s *SignUpRequest) Bind(r *http.Request) error {
-	if s.FirstName == "" {
-		return errors.New("first_name is required")
-	}
-	if s.LastName == "" {
-		return errors.New("last_name is required")
-	}
-	if s.Email == "" {
-		return errors.New("email is required")
-	}
-	if s.Password == "" {
-		return errors.New("password is required")
-	}
-	return nil
-}
-
-type UserResponse struct {
-	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Roles     []string  `json:"roles"`
-}
-
-func (j *UserResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
 }
