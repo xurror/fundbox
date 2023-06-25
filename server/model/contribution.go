@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/google/uuid"
-	"gorm.io/gorm/clause"
 )
 
 type Contribution struct {
@@ -13,21 +12,4 @@ type Contribution struct {
 	Fund          Fund      `json:"fund"`
 	ContributorID uuid.UUID `json:"-" gorm:"not null;type:uuid"`
 	Contributor   User      `json:"contributor" gorm:"foreignKey:ContributorID;references:ID"`
-}
-
-func CreateContribution(contribution *Contribution) (*Contribution, error) {
-	result := db.Preload(clause.Associations).Preload("Amount.Currency").Create(&contribution)
-	return contribution, HandleError(result.Error)
-}
-
-func GetContribution(id string) (*Contribution, error) {
-	contribution := &Contribution{}
-	result := db.Preload(clause.Associations).Preload("Amount.Currency").First(&contribution, "id = ?", id)
-	return contribution, HandleError(result.Error)
-}
-
-func GetContributions(limit, offset int) ([]*Contribution, error) {
-	contributions := []*Contribution{}
-	result := db.Preload(clause.Associations).Preload("Amount.Currency").Limit(limit).Find(&contributions)
-	return contributions, HandleError(result.Error)
 }

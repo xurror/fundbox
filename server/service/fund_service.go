@@ -1,28 +1,45 @@
 package service
 
-import "getting-to-go/model"
+import (
+	"getting-to-go/model"
+	"gorm.io/gorm"
+)
 
-type FundService struct{}
+type FundService struct {
+	db *gorm.DB
+}
 
-func NewFundService() *FundService {
-	return &FundService{}
+func NewFundService(db *gorm.DB) *FundService {
+	return &FundService{
+		db: db,
+	}
 }
 
 func (s *FundService) CreateFund(reason, description string) (*model.Fund, error) {
-	return model.CreateFund(&model.Fund{
+	fund := &model.Fund{
 		Reason:      reason,
 		Description: description,
-	})
+	}
+	result := s.db.Create(&fund)
+	return fund, model.HandleError(result.Error)
 }
 
 func (s *FundService) GetFund(id string) (*model.Fund, error) {
-	return model.GetFund(id)
+	fund := &model.Fund{}
+	result := s.db.First(&fund, "id = ?", id)
+	return fund, model.HandleError(result.Error)
 }
 
 func (s *FundService) GetFunds(limit, offset int) ([]*model.Fund, error) {
-	return model.GetFunds(limit, offset)
+	var funds []*model.Fund
+	result := s.db.Limit(limit).Offset(offset).Find(&funds)
+	return funds, model.HandleError(result.Error)
 }
 
 func (s *FundService) GetFundContributions(fundID string, limit, offset int) ([]*model.Contribution, error) {
-	return model.GetFundContributions(fundID, limit, offset)
+	var contributions []*model.Contribution
+	result := s.db.Limit(limit).
+		Offset(offset).
+		Find(&contributions, "fund_id = ?", fundID)
+	return contributions, model.HandleError(result.Error)
 }

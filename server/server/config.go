@@ -1,39 +1,70 @@
 package server
 
 import (
-	"getting-to-go/config"
-	"github.com/go-chi/cors"
+	"getting-to-go/service"
+	"github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/sirupsen/logrus"
+	"time"
 )
 
-type Config struct {
-	Port        string
-	Debug       bool
-	DisableAuth bool
-}
-
-func NewConfig(config *config.AppConfig) *Config {
-	return &Config{
-		Port:        config.Server.Port,
-		Debug:       config.Server.Debug,
-		DisableAuth: config.Server.DisableAuth,
+func CorsConfig() middleware.CORSConfig {
+	return middleware.CORSConfig{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowOrigins: []string{"*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposeHeaders:    []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}
 }
 
-type RouterConfig struct {
-	DisableAuth bool
+func TimeoutConfig() middleware.TimeoutConfig {
+	return middleware.TimeoutConfig{
+		Skipper:      middleware.DefaultSkipper,
+		ErrorMessage: "request timeout",
+		Timeout:      30 * time.Second,
+	}
 }
 
-func CorsOptions() cors.Options {
-	// Basic CORS
-	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
-	return cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"https://*", "http://*"},
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+func RequestLoggerConfig(log *logrus.Logger) middleware.RequestLoggerConfig {
+	return middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, values middleware.RequestLoggerValues) error {
+			status := values.Status
+			var logLevel logrus.Level
+
+			if status >= 200 && status < 300 {
+				logLevel = logrus.InfoLevel
+			} else if status >= 300 && status < 400 {
+				logLevel = logrus.WarnLevel
+			} else if status >= 400 && status < 500 {
+				logLevel = logrus.DebugLevel
+			} else {
+				logLevel = logrus.ErrorLevel
+			}
+
+			log.WithFields(logrus.Fields{
+				"method": values.Method,
+				"URI":    values.URI,
+				"status": status,
+			}).Log(logLevel, "request")
+			return nil
+		},
+	}
+}
+
+func JwtConfig(authService *service.AuthService) echojwt.Config {
+	return echojwt.Config{
+		SigningKey:     []byte("secret"),
+		SigningMethod:  jwa.HS256.String(),
+		TokenLookup:    "header:Authorization:Bearer",
+		ContextKey:     "user",
+		ParseTokenFunc: authService.Authorize,
 	}
 }
