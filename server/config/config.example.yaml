@@ -11,4 +11,4 @@ jwt:
   signingKey: ${JWT_SIGNING_KEY}
   expiration: ${JWT_EXPIRATION}
 logger:
-  level: ${LOGGER_LEVEL} // 0 - 6
+  level: ${LOGGER_LEVEL} # 0 - 6
