@@ -10,9 +10,8 @@ import (
 // AppConfig contains the configuration for the application
 type AppConfig struct {
 	Server struct {
-		Port        string `yaml:"port"`
-		Debug       bool   `yaml:"debug"`
-		DisableAuth bool   `yaml:"disableAuth"`
+		Port string `yaml:"port"`
+		Mode string `yaml:"mode"`
 	} `yaml:"server"`
 
 	Database struct {
@@ -27,6 +26,10 @@ type AppConfig struct {
 		SigningKey string        `yaml:"signingKey"`
 		Expiration time.Duration `yaml:"expiration"`
 	} `yaml:"jwt"`
+
+	Logger struct {
+		Level int32 `yaml:"level"`
+	} `yaml:"logger"`
 }
 
 func NewAppConfig() *AppConfig {

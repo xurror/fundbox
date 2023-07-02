@@ -30,11 +30,8 @@ func NewGraphQlHandler(
 }
 
 func (*GraphQlHandler) GraphiQlHandler(name, pattern string) echo.HandlerFunc {
-	h := playground.Handler(name, pattern)
-	return func(c echo.Context) error {
-		h.ServeHTTP(c.Response(), c.Request())
-		return nil
-	}
+	srv := playground.Handler(name, pattern)
+	return echo.WrapHandler(srv)
 }
 
 func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
@@ -45,12 +42,13 @@ func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 
 	c.Directives.HasRoles = graph.HasRolesDirective
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
-	h.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(c))
+	srv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
 		return err
 	})
-	h.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+
+	srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
 		// notify bug tracker...
 		log.Print(err)
 		switch v := err.(type) {
@@ -63,8 +61,5 @@ func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 		}
 	})
 
-	return func(c echo.Context) error {
-		h.ServeHTTP(c.Response(), c.Request())
-		return nil
-	}
+	return echo.WrapHandler(srv)
 }
