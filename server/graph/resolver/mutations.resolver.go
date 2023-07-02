@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"getting-to-go/graph/generated"
 	models "getting-to-go/model"
 
@@ -20,12 +19,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input generated.NewUs
 
 // StartFund is the resolver for the startFund field.
 func (r *mutationResolver) StartFund(ctx context.Context, input *generated.NewFund) (*models.Fund, error) {
-	panic(fmt.Errorf("not implemented: StartFund - startFund"))
+	return r.fundService.CreateFundFromInput(input)
 }
 
 // Contribute is the resolver for the contribute field.
 func (r *mutationResolver) Contribute(ctx context.Context, fundID uuid.UUID, input generated.NewContribution) (*models.Contribution, error) {
-	panic(fmt.Errorf("not implemented: Contribute - contribute"))
+	return r.contributionService.Contribute(ctx, fundID, input)
 }
 
 // Mutation returns generated.MutationResolver implementation.

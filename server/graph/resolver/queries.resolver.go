@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	appContext "getting-to-go/context"
 	"getting-to-go/graph/generated"
 	"getting-to-go/model"
@@ -16,24 +15,23 @@ import (
 
 // Funds is the resolver for the funds field.
 func (r *queryResolver) Funds(ctx context.Context, limit *int, offset *int) ([]*model.Fund, error) {
-	panic(fmt.Errorf("not implemented: Funds - funds"))
+	return r.fundService.GetFunds(util.GetLimitAndOffset(limit, offset))
 }
 
 // Fund is the resolver for the fund field.
 func (r *queryResolver) Fund(ctx context.Context, id uuid.UUID) (*model.Fund, error) {
-	panic(fmt.Errorf("not implemented: Fund - fund"))
+	return r.fundService.GetFund(id)
 }
 
 // FundContributions is the resolver for the fundContributions field.
 func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error) {
-	panic(fmt.Errorf("not implemented: FundContributions - fundContributions"))
+	l, o := util.GetLimitAndOffset(limit, offset)
+	return r.fundService.GetFundContributions(*fundID, l, o)
 }
 
 // CurrentUser is the resolver for the currentUser field.
 func (r *queryResolver) CurrentUser(ctx context.Context) (*model.User, error) {
-	ec := appContext.AcquireAppContext(ctx)
-	user := ec.Get("user")
-	return (user).(*model.User), nil
+	return appContext.CurrentUser(ctx), nil
 }
 
 // User is the resolver for the user field.

@@ -1,13 +1,14 @@
 package logging
 
 import (
+	"getting-to-go/config"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/fx/fxevent"
 	"os"
 	"strings"
 )
 
-func NewLogger() *logrus.Logger {
+func NewLogger(config *config.AppConfig) *logrus.Logger {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp: true,
@@ -18,7 +19,7 @@ func NewLogger() *logrus.Logger {
 		},
 	})
 	logger.SetOutput(os.Stdout)
-	logger.SetLevel(logrus.TraceLevel)
+	logger.SetLevel((logrus.Level)(config.Logger.Level))
 
 	return logger
 }
