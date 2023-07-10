@@ -2,7 +2,6 @@ package resolver
 
 import (
 	"getting-to-go/service"
-	"github.com/labstack/echo/v4"
 )
 
 //go:generate go run github.com/99designs/gqlgen generate
@@ -13,8 +12,7 @@ import (
 
 type Resolver struct {
 	UserService         *service.UserService
-	fundService         *service.FundService
-	contributionService *service.ContributionService
+	FundService         *service.FundService
+	ContributionService *service.ContributionService
 	AuthService         *service.AuthService
-	Server              *echo.Echo
 }

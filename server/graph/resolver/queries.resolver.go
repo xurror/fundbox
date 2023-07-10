@@ -15,18 +15,18 @@ import (
 
 // Funds is the resolver for the funds field.
 func (r *queryResolver) Funds(ctx context.Context, limit *int, offset *int) ([]*model.Fund, error) {
-	return r.fundService.GetFunds(util.GetLimitAndOffset(limit, offset))
+	return r.FundService.GetFunds(util.GetLimitAndOffset(limit, offset))
 }
 
 // Fund is the resolver for the fund field.
 func (r *queryResolver) Fund(ctx context.Context, id uuid.UUID) (*model.Fund, error) {
-	return r.fundService.GetFund(id)
+	return r.FundService.GetFund(id)
 }
 
 // FundContributions is the resolver for the fundContributions field.
 func (r *queryResolver) FundContributions(ctx context.Context, fundID *uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error) {
 	l, o := util.GetLimitAndOffset(limit, offset)
-	return r.fundService.GetFundContributions(*fundID, l, o)
+	return r.FundService.GetFundContributions(*fundID, l, o)
 }
 
 // CurrentUser is the resolver for the currentUser field.
@@ -47,7 +47,7 @@ func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*
 // UserContributions is the resolver for the userContributions field.
 func (r *queryResolver) UserContributions(ctx context.Context, userID uuid.UUID, limit *int, offset *int) ([]*model.Contribution, error) {
 	l, o := util.GetLimitAndOffset(limit, offset)
-	return r.contributionService.GetContributionsByUserID(userID, l, o)
+	return r.ContributionService.GetContributionsByUserID(userID, l, o)
 }
 
 // Query returns generated.QueryResolver implementation.
