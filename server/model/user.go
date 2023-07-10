@@ -4,7 +4,6 @@ import (
 	"github.com/lib/pq"
 )
 
-// User represents a user in the system
 type User struct {
 	Auditable
 	FirstName     string         `json:"first_name" gorm:"not null"`

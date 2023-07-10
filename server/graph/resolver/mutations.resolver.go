@@ -19,12 +19,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input generated.NewUs
 
 // StartFund is the resolver for the startFund field.
 func (r *mutationResolver) StartFund(ctx context.Context, input *generated.NewFund) (*models.Fund, error) {
-	return r.fundService.CreateFundFromInput(input)
+	return r.FundService.CreateFundFromInput(input)
 }
 
 // Contribute is the resolver for the contribute field.
 func (r *mutationResolver) Contribute(ctx context.Context, fundID uuid.UUID, input generated.NewContribution) (*models.Contribution, error) {
-	return r.contributionService.Contribute(ctx, fundID, input)
+	return r.ContributionService.Contribute(ctx, fundID, input)
 }
 
 // Mutation returns generated.MutationResolver implementation.

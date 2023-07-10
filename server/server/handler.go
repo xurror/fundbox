@@ -15,17 +15,23 @@ import (
 )
 
 type GraphQlHandler struct {
-	userService *service.UserService
-	authService *service.AuthService
+	userService         *service.UserService
+	authService         *service.AuthService
+	fundService         *service.FundService
+	contributionService *service.ContributionService
 }
 
 func NewGraphQlHandler(
 	userService *service.UserService,
 	authService *service.AuthService,
+	fundService *service.FundService,
+	contributionService *service.ContributionService,
 ) *GraphQlHandler {
 	return &GraphQlHandler{
-		userService: userService,
-		authService: authService,
+		userService:         userService,
+		authService:         authService,
+		fundService:         fundService,
+		contributionService: contributionService,
 	}
 }
 
@@ -36,8 +42,10 @@ func (*GraphQlHandler) GraphiQlHandler(name, pattern string) echo.HandlerFunc {
 
 func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 	c := generated.Config{Resolvers: &resolver.Resolver{
-		UserService: g.userService,
-		AuthService: g.authService,
+		UserService:         g.userService,
+		AuthService:         g.authService,
+		FundService:         g.fundService,
+		ContributionService: g.contributionService,
 	}}
 
 	c.Directives.HasRoles = graph.HasRolesDirective
