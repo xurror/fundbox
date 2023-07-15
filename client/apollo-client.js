@@ -3,7 +3,7 @@ import { setContext } from '@apollo/client/link/context';
 import { BASE_URL, TOKEN } from './utils/constants';
 
 const httpLink = createHttpLink({
-  uri: `${BASE_URL}/graphiql`,
+  uri: `${BASE_URL}/gql/query`,
 });
 
 const authLink = setContext((_, { headers }) => {

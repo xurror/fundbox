@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, use, useState, useEffect } from 'react'
 import Head from 'next/head'
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import CopyAllIcon from '@mui/icons-material/CopyAllRounded';
@@ -34,17 +34,15 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const QUERY = gql`
-  mutation startFund(
-    input: {
-    reason: "Bossmans Birthday",
-    description:"Planning bossman's suprise party"
-  }) {
-    id,
-    reason,
-    description
+const Mutation = gql`
+  mutation startFund($reason: String!, $description: String!) {
+    startFund( input: { reason: $reason, description: $description } ) {
+      id
+      reason
+      description
+    }
   }
-`;
+`
 
 export default function Add() {
   const router = useRouter();
@@ -58,27 +56,29 @@ export default function Add() {
   const [link, setLink] = useState('');
   const [progress, setProgress] = useState(20);
 
-  const [startFund, { data, loading, error}] = useMutation(QUERY, {
-    variables: {
-      input: {
-        reason: form.name,
-        description: form.description
-      }
-    },
-  });
+  const [startFund, { data, loading, error}] = useMutation(Mutation);
 
   const create = () => {
-    const name = form.name;
-    const parsedName = name.toLowerCase().replace(/[^A-Z0-9]+/ig, "_");
-    const copyLink = `${window.location.href}${parsedName}/fund`
-    setLink(copyLink);
-
     let _form: any = {...form}
     _form.disabled = true;
     setForm(_form);
     setProgress(85);
-    startFund()
+    startFund({
+      variables: {
+        reason: form.name,
+        description: form.description
+      },
+    })
   }
+
+  useEffect(() => {
+    if(data) {
+      const {id} = data.startFund;
+      const copyLink = `${window.origin}/funds/${id}/fund`
+      setLink(copyLink);
+    }
+  }, [data]);
+  
   const copyToClipboard = () => {
     if (link.length > 0) {
       navigator.clipboard.writeText(link)

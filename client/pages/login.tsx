@@ -40,6 +40,8 @@ export const login = () => {
   
   const login = async () => {
     const query = router.query;
+    setLoading(true)
+    setDisabled(true)
 
     try {
       const { password, email } = form;
@@ -57,6 +59,9 @@ export const login = () => {
       const response = await fetch(url, requestInit);
       const data = await response.json();
 
+      if (response.status !== 200) {
+        return window.alert(data.message)
+      }
       localStorage.setItem(TOKEN, data.token);
       router.push(`/${query?.to ? query.to : ''}`);
     } catch (error) {

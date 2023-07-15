@@ -10,6 +10,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../../../utils/hooks';
 import { useRouter } from "next/router";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import CircularProgress from '@mui/material/CircularProgress';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -33,9 +35,32 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
+const Mutation = gql`
+  mutation contribute($fund_id: ID!, $amount: Float!, $currency: ID!) {
+    contribute(
+      fund_id: $fund_id,
+      input: { 
+        amount: $amount,
+        currency: $currency 
+      } 
+    ) {
+      id
+    }
+  }
+`
+
+const QUERY = gql`
+  query fund($id: ID!){
+    fund(id: $id) {
+      reason
+      description
+    }
+  }
+`;
+
 export const Fund = () => {
   const router = useRouter();
-  const {token} = useAuth({reroute: true, from: router.asPath});
+  const { query } = router;
   
   const [form, setForm] = useState({
     name: '',
@@ -44,18 +69,31 @@ export const Fund = () => {
     paymentMethod: '',
     disabled: false
   });
-  const [fund, setFund] = useState({
-    name: 'Raise money for bossman',
-    description: 'We need to contribute some cash for bossman\'s birthday',
-  });
+
   const [progress, setProgress] = useState(15);
   const [paymentMethod, setPaymentMethod] = useState('');
+
+  const [constribute, { loading, error}] = useMutation(Mutation);
+
+  const {data, loading: loadingFund, error: fundError} = useQuery(QUERY, {
+    variables: { id: query[':slug']}
+  });
 
   const create = () => {
     let _form: any = {...form}
     _form.disabled = true;
     setForm(_form);
     setProgress(85)
+
+    constribute({
+      variables: {
+        fund_id: query[':slug'],
+        amount: form.amount,
+        currency: 'USD'
+      },
+    })
+
+    // window.alert("Successfully contributed to fund!");
   }
 
   const updateForm = (value: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
@@ -71,6 +109,9 @@ export const Fund = () => {
     setPaymentMethod(event.target.value);
     setProgress(80)
   };
+
+  if (error) return window.alert(error.message);
+  if (fundError) return window.alert(fundError.message);
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -90,8 +131,14 @@ export const Fund = () => {
 
         <div className='flex flex-1 flex-col items-center'>
           <div className='mx-6'>
-            <h1 className='text-dark_blue-100 text-4xl text-center font-semibold tracking-[-1px]'>{fund.name}</h1>
-            <p className='text-dark_blue-80 text-lg text-center'>{fund.description}</p>
+            {loadingFund ? (
+              <CircularProgress size={20} color='inherit' />
+            ): (
+              <>
+                <h1 className='text-dark_blue-100 text-4xl text-center font-semibold tracking-[-1px]'>{data.fund.reason ?? ''}</h1>
+                <p className='text-dark_blue-80 text-lg text-center'>{data.fund.description ?? ''}</p>
+              </>
+            )}
           </div>
 
           <div className='w-full p-6 mt-6 mx-6'>
@@ -151,7 +198,12 @@ export const Fund = () => {
               className='bg-blue-100 w-full h-14 rounded-2xl text-white font-medium leading-6 tracking-[-0.3px] disabled:opacity-50'
               disabled={form.disabled}
               onClick={() => create()}
-            >Submit</button>
+            >
+              <span className='mr-4'>Submit</span>
+              {loading && (
+                <CircularProgress size={20} color='inherit' />
+              )}
+            </button>
           </div>
         </div>
       </main>

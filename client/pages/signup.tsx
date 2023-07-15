@@ -64,7 +64,6 @@ export const Signup = () => {
       }
       const response = await fetch(url, requestInit);
       const user = await response.json();
-      console.log({user})
       login()
     } catch (error) {
       console.log({error})
@@ -78,7 +77,7 @@ export const Signup = () => {
     const query = router.query;
     try {
       const { password, email } = form;
-      const url = `${process.env.BASE_URL}/auth/login`;
+      const url = `${BASE_URL}/auth/login`;
       const requestInit = {
         method: 'POST',
         headers: {
@@ -93,7 +92,6 @@ export const Signup = () => {
       const data = await response.json();
 
       localStorage.setItem(TOKEN, data.token);
-      console.log({data})
       setLoading(false)
       setDisabled(false)
       router.push(`/${query?.to ? query.to : ''}`);
