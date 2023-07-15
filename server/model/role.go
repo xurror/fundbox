@@ -56,7 +56,6 @@ func ConvertToRoleArray(stringArray pq.StringArray) []Role {
 	return convertedRoles
 }
 
-// UnmarshalGQL implements the graphql.Unmarshaler interface
 func (r *Role) UnmarshalGQL(v interface{}) error {
 	role, ok := v.(string)
 	if !ok {
@@ -66,7 +65,6 @@ func (r *Role) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-// MarshalGQL implements the graphql.Marshaler interface
 func (r Role) MarshalGQL(w io.Writer) {
 	w.Write([]byte(`"` + r + `"`))
 }

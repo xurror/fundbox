@@ -1,44 +1,68 @@
 package server
 
 import (
-	"getting-to-go/config"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/secure"
+	"getting-to-go/service"
+	"github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/sirupsen/logrus"
+	"time"
 )
 
-type Config struct {
-	Port        string
-	Debug       bool
-	DisableAuth bool
-}
-
-func NewConfig(config *config.AppConfig) *Config {
-	return &Config{
-		Port:        config.Server.Port,
-		Debug:       config.Server.Debug,
-		DisableAuth: config.Server.DisableAuth,
+func CorsConfig() middleware.CORSConfig {
+	return middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposeHeaders:    []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}
 }
 
-type RouterConfig struct {
-	DisableAuth bool
+func TimeoutConfig() middleware.TimeoutConfig {
+	return middleware.TimeoutConfig{
+		Skipper:      middleware.DefaultSkipper,
+		ErrorMessage: "request timeout",
+		Timeout:      30 * time.Second,
+	}
 }
 
-func CorsConfig() cors.Config {
-	return cors.DefaultConfig()
+func RequestLoggerConfig(log *logrus.Logger) middleware.RequestLoggerConfig {
+	return middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, values middleware.RequestLoggerValues) error {
+			status := values.Status
+			var logLevel logrus.Level
+
+			if status >= 200 && status < 300 {
+				logLevel = logrus.InfoLevel
+			} else if status >= 300 && status < 400 {
+				logLevel = logrus.WarnLevel
+			} else if status >= 400 && status < 500 {
+				logLevel = logrus.DebugLevel
+			} else {
+				logLevel = logrus.ErrorLevel
+			}
+
+			log.WithFields(logrus.Fields{
+				"method": values.Method,
+				"URI":    values.URI,
+				"status": status,
+			}).Log(logLevel, "request")
+			return nil
+		},
+	}
 }
 
-func SecureConfig() secure.Config {
-	return secure.Config{
-		//SSLRedirect:           false,
-		//IsDevelopment:         false,
-		//STSSeconds:            315360000,
-		//STSIncludeSubdomains:  false,
-		//FrameDeny:             false,
-		//ContentTypeNosniff:    false,
-		//BrowserXssFilter:      false,
-		//ContentSecurityPolicy: "",
-		//IENoOpen:              false,
-		//SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+func JwtConfig(authService *service.AuthService) echojwt.Config {
+	return echojwt.Config{
+		SigningKey:     []byte("secret"),
+		SigningMethod:  jwa.HS256.String(),
+		TokenLookup:    "header:Authorization:Bearer",
+		ContextKey:     "user",
+		ParseTokenFunc: authService.Authorize,
 	}
 }

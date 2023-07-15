@@ -9,27 +9,54 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"log"
 )
 
-func graphqlHandler() gin.HandlerFunc {
-	userService := service.NewUserService()
-	authService := service.NewAuthService(userService)
+type GraphQlHandler struct {
+	userService         *service.UserService
+	authService         *service.AuthService
+	fundService         *service.FundService
+	contributionService *service.ContributionService
+}
+
+func NewGraphQlHandler(
+	userService *service.UserService,
+	authService *service.AuthService,
+	fundService *service.FundService,
+	contributionService *service.ContributionService,
+) *GraphQlHandler {
+	return &GraphQlHandler{
+		userService:         userService,
+		authService:         authService,
+		fundService:         fundService,
+		contributionService: contributionService,
+	}
+}
+
+func (*GraphQlHandler) GraphiQlHandler(name, pattern string) echo.HandlerFunc {
+	srv := playground.Handler(name, pattern)
+	return echo.WrapHandler(srv)
+}
+
+func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 	c := generated.Config{Resolvers: &resolver.Resolver{
-		UserService: *userService,
-		AuthService: *authService,
+		UserService:         g.userService,
+		AuthService:         g.authService,
+		FundService:         g.fundService,
+		ContributionService: g.contributionService,
 	}}
 
 	c.Directives.HasRoles = graph.HasRolesDirective
 
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
-	h.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(c))
+	srv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
 		err := graphql.DefaultErrorPresenter(ctx, e)
 		return err
 	})
-	h.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+
+	srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
 		// notify bug tracker...
 		log.Print(err)
 		switch v := err.(type) {
@@ -42,16 +69,5 @@ func graphqlHandler() gin.HandlerFunc {
 		}
 	})
 
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
-// Defining the Playground handler
-func playgroundHandler() gin.HandlerFunc {
-	h := playground.Handler("GraphQL Playground", "/graphql")
-
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
+	return echo.WrapHandler(srv)
 }

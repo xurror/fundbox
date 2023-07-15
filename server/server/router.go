@@ -1,43 +1,46 @@
 package server
 
 import (
+	"getting-to-go/config"
+	appContext "getting-to-go/context"
 	"getting-to-go/controller"
-	"getting-to-go/model"
-	"getting-to-go/server/middleware"
 	"getting-to-go/service"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/location"
-	"github.com/gin-contrib/requestid"
-	"github.com/gin-gonic/gin"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 )
 
-func NewRouter(c *RouterConfig) *gin.Engine {
-	r := gin.Default()
+func NewRouter(
+	log *logrus.Logger,
+	config *config.AppConfig,
+	graphQl *GraphQlHandler,
+	authService *service.AuthService,
+	authController *controller.AuthController,
+) *echo.Echo {
+	e := echo.New()
+	e.Use(middleware.RequestLoggerWithConfig(RequestLoggerConfig(log)))
+	e.Use(middleware.RequestID())
+	e.Use(middleware.CORSWithConfig(CorsConfig()))
+	e.Use(middleware.TimeoutWithConfig(TimeoutConfig()))
+	e.Use(middleware.BodyLimit("2M"))
+	e.Use(appContext.RegisterAppContext())
+	//if config.Server.Mode == "debug" {
+	//	e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+	//		log.WithFields(logrus.Fields{
+	//			"request":  string(reqBody),
+	//			"response": string(resBody),
+	//		}).Debug("REQUEST BODY")
+	//	}))
+	//}
 
-	r.Use(middleware.GinContextToContextMiddleware())
-	r.Use(requestid.New())
-	r.Use(location.Default())
-	r.Use(middleware.TimeoutMiddleware())
-	//r.Use(secure.New(SecureConfig()))
-	r.Use(cors.New(CorsConfig()))
+	authGroup := e.Group("/auth")
+	authController.Register(authGroup)
 
-	authMiddleware := middleware.GetAuthMiddleware(model.DB())
-	userService := service.NewUserService()
-	authService := service.NewAuthService(userService)
-	authController := controller.NewAuthController(authService)
+	graphql := e.Group("/gql", echojwt.WithConfig(JwtConfig(authService)))
+	graphql.POST("/query", graphQl.QueryHandler())
 
-	auth := r.Group("/auth")
-	authController.Register(auth, authMiddleware.LoginHandler)
+	e.GET("/graphiql", graphQl.GraphiQlHandler("Fund Box", "/gql/query"))
 
-	r.GET("/graphiql", playgroundHandler())
-
-	// Secured routes
-	if !c.DisableAuth {
-		r.Use(authMiddleware.MiddlewareFunc())
-	}
-
-	r.POST("/auth/refresh_token", authMiddleware.RefreshHandler)
-	r.POST("/graphql", graphqlHandler())
-
-	return r
+	return e
 }

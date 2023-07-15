@@ -11,8 +11,8 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserService         service.UserService
-	fundService         service.FundService
-	contributionService service.ContributionService
-	AuthService         service.AuthService
+	UserService         *service.UserService
+	FundService         *service.FundService
+	ContributionService *service.ContributionService
+	AuthService         *service.AuthService
 }

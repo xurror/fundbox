@@ -15,9 +15,3 @@ type Amount struct {
 	CurrencyID uuid.UUID `json:"-" gorm:"not null"`
 	Currency   Currency  `json:"currency"`
 }
-
-func GetCurrency(name string) (*Currency, error) {
-	currency := &Currency{}
-	result := db.First(&currency, "currency = ?", name)
-	return currency, HandleError(result.Error)
-}

@@ -1,28 +1,23 @@
 package server
 
 import (
+	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"getting-to-go/config"
+	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
+	"net/http"
 )
 
-type Server struct {
-	router *gin.Engine
-	config *Config
-}
-
-func NewServer(c *Config) (*Server, error) {
-	if !c.Debug {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	return &Server{
-		router: NewRouter(&RouterConfig{
-			DisableAuth: c.DisableAuth,
-		}),
-		config: c,
-	}, nil
-}
-
-func (s *Server) Run() {
-	s.router.Run(fmt.Sprintf(":%s", s.config.Port))
+func NewServer(lc fx.Lifecycle, e *echo.Echo, c *config.AppConfig) *http.Server {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go e.Start(fmt.Sprintf(":%s", c.Server.Port))
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return e.Shutdown(ctx)
+		},
+	})
+	return e.Server
 }

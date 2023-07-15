@@ -3,7 +3,9 @@ package model
 import (
 	"errors"
 	"fmt"
-	"getting-to-go/util"
+	"getting-to-go/config"
+	_type "getting-to-go/type"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
@@ -13,12 +15,6 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
-
-var db *gorm.DB
-
-func DB() *gorm.DB {
-	return db
-}
 
 type Persistable struct {
 	ID uuid.UUID `json:"id" gorm:"primary_key;type:uuid"`
@@ -36,26 +32,24 @@ func (entity *Persistable) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-// Connect initializes the database connection
-func Connect(host, port, user, password, dbname string) error {
+func NewDB(c *config.AppConfig) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name)
 
-	var err error
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to database: %v", err))
+		log.Panic(fmt.Sprintf("Failed to connect to database: %v", err))
 	}
 
-	return nil
+	runMigrations(db)
+
+	return db
 }
 
-// RunMigrations Run Migration
-func RunMigrations() {
+func runMigrations(db *gorm.DB) {
 	err := db.AutoMigrate(&User{}, &Fund{}, &Contribution{}, &Currency{}, &Amount{})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to migrate database: %v", err))
+		log.Panic(fmt.Sprintf("Failed to migrate database: %v", err))
 	}
 }
 
@@ -65,7 +59,7 @@ func HandleError(err error) error {
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return util.NewError(http.StatusNotFound, "Record not found")
+		return _type.NewAppError(http.StatusNotFound, "Record not found")
 	}
-	return util.NewError(http.StatusInternalServerError, err.Error())
+	return _type.NewAppError(http.StatusInternalServerError, err.Error())
 }

@@ -1,10 +1,14 @@
 server:
   port: ${SERVER_PORT}
-  debug: ${DEBUG}
-  disableAuth: ${DISABLE_AUTH}
+  mode: ${SERVER_MODE}
 database:
   host: ${DB_HOST}
   port: ${DB_PORT}
   user: ${DB_USERNAME}
   password: ${DB_PASSWORD}
   name: ${DB_NAME}
+jwt:
+  signingKey: ${JWT_SIGNING_KEY}
+  expiration: ${JWT_EXPIRATION}
+logger:
+  level: ${LOGGER_LEVEL} # 0 - 6

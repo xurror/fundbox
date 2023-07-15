@@ -1,19 +1,19 @@
 package config
 
 import (
-	"fmt"
-	"os"
-
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"os"
+	"time"
 )
 
 // AppConfig contains the configuration for the application
 type AppConfig struct {
 	Server struct {
-		Port        string `yaml:"port"`
-		Debug       bool   `yaml:"debug"`
-		DisableAuth bool   `yaml:"disableAuth"`
-	}
+		Port string `yaml:"port"`
+		Mode string `yaml:"mode"`
+	} `yaml:"server"`
+
 	Database struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
@@ -21,21 +21,27 @@ type AppConfig struct {
 		Password string `yaml:"password"`
 		Name     string `yaml:"name"`
 	} `yaml:"database"`
+
+	Jwt struct {
+		SigningKey string        `yaml:"signingKey"`
+		Expiration time.Duration `yaml:"expiration"`
+	} `yaml:"jwt"`
+
+	Logger struct {
+		Level int32 `yaml:"level"`
+	} `yaml:"logger"`
 }
 
-// LoadConfig loads the application configuration from the given YAML file
-func LoadConfig(filename string) (*AppConfig, error) {
-	data, err := os.ReadFile(filename)
+func NewAppConfig() *AppConfig {
+	data, err := os.ReadFile("./config/config.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %v", err)
+		log.Panic(err.Error())
 	}
 
-	// expand environment variables
+	var config AppConfig
 	data = []byte(os.ExpandEnv(string(data)))
-	conf := &AppConfig{}
-	if err := yaml.Unmarshal(data, conf); err != nil {
-		return nil, fmt.Errorf("failed to parse config file: %v", err)
+	if err = yaml.Unmarshal(data, &config); err != nil {
+		log.Panic(err.Error())
 	}
-
-	return conf, nil
+	return &config
 }
