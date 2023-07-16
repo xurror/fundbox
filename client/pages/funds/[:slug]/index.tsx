@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
@@ -10,6 +10,9 @@ import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
 import dynamic from 'next/dynamic'
+import { gql, useMutation, useQuery } from "@apollo/client";
+import CircularProgress from '@mui/material/CircularProgress';
+import { useRouter } from "next/router";
 
 import { useAuth } from '../../../utils/hooks';
 
@@ -63,8 +66,58 @@ const StyledTableHeaderCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+const FUNDQUERY = gql`
+  query fund($id: ID!){
+    fund(id: $id) {
+      reason
+      description
+    }
+  }
+`;
+
+const FUNDCONTRIBUTIONSQUERY = gql`
+  query fundContributions($fund_id: ID!, $limit: Int, $offset: Int){
+    fundContributions(fund_id: $fund_id, limit: $limit, offset: $offset) {
+      id
+      amount {
+        value
+      }
+      contributor {
+        first_name
+        last_name
+      }
+    }
+  }
+`;
+
 export const FundDetails = () => {
+  const router = useRouter();
+  const [fundContributions, setFundContributions] = useState<{
+    id: string,
+    amount: {
+      value: number
+    },
+    contributor: {
+      first_name: string,
+      last_name: string,
+    }
+  }[]>([]);
+  const { query } = router;
   const {token} = useAuth({reroute: true, from: window.location.pathname });
+  const {data: fundData, loading: loadingFund, error: fundError} = useQuery(FUNDQUERY, {
+    variables: { id: query[':slug']}
+  });
+  const {data: contributionData, loading: loadingContributions, error: contributionsError} = useQuery(FUNDCONTRIBUTIONSQUERY, {
+    variables: { fund_id: query[':slug'], limit: 10, offset: 0}
+  });
+
+  useEffect(() => {
+    if (contributionData && contributionData.fundContributions) {
+      console.log(contributionData.fundContributions)
+      setFundContributions(contributionData.fundContributions)
+    }
+  }, [contributionData])
+  
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -74,35 +127,49 @@ export const FundDetails = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className='w-full flex flex-col'>
-        <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>Bossman birthday fund to gather money for the party</h1>
+      <main className='w-full flex flex-col'>  
+        {loadingFund ? (
+          <div className=' mt-5 flex justify-center items-center'>
+            <CircularProgress size={20} color='inherit' />
+          </div>
+        ): (
+          <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>{fundData?.fund.reason ?? ''}</h1>
+        )}
 
         <div className='mx-5 mt-5 flex-1'>
           <TableContainer component={StyledPaperClasses} sx={{ maxHeight: 'calc(100vh - 205px)' }}>
             <Table sx={{ width: '100%' }} size="small" stickyHeader aria-label="a dense table">
               <StyledTableHead>
                 <TableRow>
-                  <StyledTableHeaderCell width={'50%'}>Name</StyledTableHeaderCell>
-                  <StyledTableHeaderCell width={'50%'}>Amount</StyledTableHeaderCell>
+                  <StyledTableHeaderCell width={'50%'}>Reason</StyledTableHeaderCell>
+                  <StyledTableHeaderCell width={'50%'}>Description</StyledTableHeaderCell>
                 </TableRow>
               </StyledTableHead>
               <TableBody>
-                {rows.map((row, index) => (
+                {fundContributions.map((contribution, index) => (
                   <TableRow
-                    key={row.name}
+                    key={contribution.id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <StyledTableCell component="th" scope="row">
                       <Link href={`/funds/${index}`}>
-                        {row.name}
+                        {contribution.contributor.first_name} {contribution.contributor.last_name}
                       </Link>
                     </StyledTableCell>
-                    <StyledTableCell>{row.amount}</StyledTableCell>
+                    <StyledTableCell>{contribution.amount.value} XAF</StyledTableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+              {fundContributions.length === 0 && (
+                <div className='text-center py-3'>No funds available yet!</div>
+              )}
           </TableContainer>
+          {loadingContributions && (
+            <div className=' mt-5 flex justify-center items-center'>
+              <CircularProgress size={20} color='inherit' />
+            </div>
+          )}
         </div>
 
         <div className='m-5'>

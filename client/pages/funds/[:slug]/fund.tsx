@@ -58,6 +58,10 @@ const QUERY = gql`
   }
 `;
 
+// 8919833c-d419-4666-9413-9867843dd9e6 => XAF
+// b8179a60-f9e0-4376-b2a5-e91ad89642dc => EUR
+// 9c4a4093-619c-494c-a1cb-3cc03e578982 => USD
+
 export const Fund = () => {
   const router = useRouter();
   const { query } = router;
@@ -89,7 +93,7 @@ export const Fund = () => {
       variables: {
         fund_id: query[':slug'],
         amount: form.amount,
-        currency: 'USD'
+        currency: '8919833c-d419-4666-9413-9867843dd9e6'
       },
     })
 

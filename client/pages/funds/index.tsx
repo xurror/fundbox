@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
@@ -11,6 +11,8 @@ import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
 import { useAuth } from '../../utils/hooks';
 import { useRouter } from "next/router";
+import { gql, useQuery } from "@apollo/client";
+import CircularProgress from '@mui/material/CircularProgress';
 
 function createData(
   name: string,
@@ -47,7 +49,6 @@ const StyledPaperClasses = styled(Paper)(({ theme }) => ({
   },
 }));
 
-
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
   [`&.${tableHeadClasses.root}`]: {
     backgroundColor: '#4C51C6',
@@ -62,9 +63,34 @@ const StyledTableHeaderCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+
+const QUERY = gql`
+  query funds($limit: Int!, $offset: Int!) {
+    funds(limit: $limit, offset: $offset) {
+      id
+      reason
+      description
+    }
+  }
+`;
+
 export const Funds = () => {
   const router = useRouter();
-  const {token} = useAuth({reroute: true, from: router.asPath});
+  const [funds, setFunds] = useState<{
+    id: string,
+    reason: string,
+    description: string
+  }[]>([]);
+  const {} = useAuth({reroute: true, from: router.asPath});
+  const {data, loading, error} = useQuery(QUERY, {variables: {limit: 10, offset: 0}});
+
+  useEffect(() => {
+    if (data && data.funds) {
+      setFunds(data.funds)
+    }
+  }, [data]);
+
+  if (error) return window.alert(error.message);
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -75,46 +101,52 @@ export const Funds = () => {
       </Head>
 
       <main className='w-full flex flex-col'>
-        <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>Active Funds</h1>
+        <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>Funds</h1>
 
-        <div className='mx-5 mt-5'>
-          <TableContainer component={StyledPaperClasses}>
-            <Table sx={{ width: '100%' }} size="small" aria-label="a dense table">
-              <StyledTableHead>
-                <TableRow>
-                  <StyledTableHeaderCell width={'45%'}>Name</StyledTableHeaderCell>
-                  <StyledTableHeaderCell align="center" width={'30%'}>Amount</StyledTableHeaderCell>
-                  <StyledTableHeaderCell align="center" width={'25%'}>Status</StyledTableHeaderCell>
-                </TableRow>
-              </StyledTableHead>
-              <TableBody>
-                {rows.map((row, index) => (
-                  <TableRow
-                    key={row.name}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <StyledTableCell component="th" scope="row">
-                      <Link href={`/funds/${index}`}>
-                        {row.name}
-                      </Link>
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
-                      <Link href={`/funds/${index}`}>{row.amount}</Link>
-                    </StyledTableCell>
-                    <StyledTableCell align="center">
-                      <div className={
-                          `text-[12px] py-[2px] rounded-xl text-white 
-                          ${row.status === 'Complete' ? 'bg-success' : 'bg-grey_disabled'}`
-                        }>
-                        {row.status}
-                      </div>
-                    </StyledTableCell>
+        {loading ? (
+          <div className=' mt-5 flex justify-center items-center'>
+            <CircularProgress size={20} color='inherit' />
+          </div>
+        ) : (
+          <div className='mx-5 mt-5'>
+            <TableContainer component={StyledPaperClasses}>
+              <Table sx={{ width: '100%' }} size="small" aria-label="a dense table">
+                <StyledTableHead>
+                  <TableRow>
+                    <StyledTableHeaderCell width={'50%'}>Name</StyledTableHeaderCell>
+                    <StyledTableHeaderCell width={'50%'}>Amount</StyledTableHeaderCell>
+                    {/* <StyledTableHeaderCell align="center" width={'25%'}>Status</StyledTableHeaderCell> */}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </div>
+                </StyledTableHead>
+                <TableBody>
+                  {funds.map((fund) => (
+                    <TableRow
+                      key={fund.id}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <StyledTableCell component="th" scope="row">
+                        <Link href={`/funds/${fund.id}`}>
+                          {fund.reason}
+                        </Link>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <Link href={`/funds/${fund.id}`}>{fund.description}</Link>
+                      </StyledTableCell>
+                      {/* <StyledTableCell align="center">
+                        <div className={
+                            `text-[12px] py-[2px] rounded-xl text-white 
+                            ${row.status === 'Complete' ? 'bg-success' : 'bg-grey_disabled'}`
+                          }>
+                          {row.status}
+                        </div>
+                      </StyledTableCell> */}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
+        )}
       </main>
     </div>
   )
