@@ -8,8 +8,9 @@ import { styled } from '@mui/material/styles';
 import { useQuery, gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
 import CircularProgress from '@mui/material/CircularProgress';
-
+import Swal from 'sweetalert2';
 import { useAuth } from '../../utils/hooks';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -93,7 +94,11 @@ export default function Add() {
     setForm(_form)
   }
 
-  if (error) return window.alert(error.message);
+  if (error) return Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: `${error.message}`,
+  })
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -105,10 +110,17 @@ export default function Add() {
 
       <main className='w-full flex flex-col'>
         <div className='w-full mt-10 mb-6 flex items-center justify-center'>
-          <StyledLinearProgress
-            variant="determinate"
-            value={progress}
-          />
+          <div className='ml-6'>
+            <button onClick={() => router.back()} className='flex items-center justify-center bg-blue-10 h-12 w-12 rounded-full'>
+              <ArrowBackIcon className='text-blue-100 w-7 h-7' />
+            </button>
+          </div>
+          <div className='flex-1 flex justify-center' style={{marginLeft: '-64px'}}>
+            <StyledLinearProgress
+              variant="determinate"
+              value={progress}
+            />
+          </div>
         </div>
 
         <div className='flex flex-1 flex-col items-center'>

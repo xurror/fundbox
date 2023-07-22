@@ -77,7 +77,7 @@ export default function App() {
           />
           {token && token.length > 0 && (
             <div className='ml-auto mr-6'>
-              <button aria-describedby={id} onClick={handleClick} className='flex items-center justify-center bg-blue-10 h-10 w-10 rounded-full'>
+              <button aria-describedby={id} onClick={handleClick} className='flex items-center justify-center bg-blue-10 h-12 w-12 rounded-full'>
                 <PersonIcon className='text-blue-100 w-7 h-7' />
               </button>
               <StyledPopover

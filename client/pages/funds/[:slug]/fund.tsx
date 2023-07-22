@@ -12,6 +12,8 @@ import { useAuth } from '../../../utils/hooks';
 import { useRouter } from "next/router";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
+import Swal from 'sweetalert2';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   [`&.${linearProgressClasses.root}`]: {
@@ -77,7 +79,7 @@ export const Fund = () => {
   const [progress, setProgress] = useState(15);
   const [paymentMethod, setPaymentMethod] = useState('');
 
-  const [constribute, { loading, error}] = useMutation(Mutation);
+  const [constribute, {data: contribution, loading, error}] = useMutation(Mutation);
 
   const {data, loading: loadingFund, error: fundError} = useQuery(QUERY, {
     variables: { id: query[':slug']}
@@ -96,8 +98,15 @@ export const Fund = () => {
         currency: '8919833c-d419-4666-9413-9867843dd9e6'
       },
     })
+  }
 
-    // window.alert("Successfully contributed to fund!");
+  if (contribution) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: `You have successfully contributed to this fund.`,
+    });
+    router.push(`/funds/${query[':slug']}`)
   }
 
   const updateForm = (value: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
@@ -114,8 +123,16 @@ export const Fund = () => {
     setProgress(80)
   };
 
-  if (error) return window.alert(error.message);
-  if (fundError) return window.alert(fundError.message);
+  if (error) return Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: `${error.message}`,
+  });
+  if (fundError) return Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: `${fundError.message}`,
+  });
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -127,10 +144,17 @@ export const Fund = () => {
 
       <main className='w-full flex flex-col'>
         <div className='w-full mt-10 mb-6 flex items-center justify-center'>
-          <StyledLinearProgress
-            variant="determinate"
-            value={progress}
-          />
+          <div className='ml-6'>
+            <button onClick={() => router.back()} className='flex items-center justify-center bg-blue-10 h-12 w-12 rounded-full'>
+              <ArrowBackIcon className='text-blue-100 w-7 h-7' />
+            </button>
+          </div>
+          <div className='flex-1 flex justify-center' style={{marginLeft: '-64px'}}>
+            <StyledLinearProgress
+              variant="determinate"
+              value={progress}
+            />
+          </div>
         </div>
 
         <div className='flex flex-1 flex-col items-center'>

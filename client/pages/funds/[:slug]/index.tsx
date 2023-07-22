@@ -13,8 +13,9 @@ import dynamic from 'next/dynamic'
 import { gql, useMutation, useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from "next/router";
-
+import Swal from 'sweetalert2';
 import { useAuth } from '../../../utils/hooks';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function createData(
   name: string,
@@ -118,6 +119,13 @@ export const FundDetails = () => {
     }
   }, [contributionData])
   
+  if (contributionsError) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: `${contributionsError.message}`,
+    })
+  }
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -133,7 +141,14 @@ export const FundDetails = () => {
             <CircularProgress size={20} color='inherit' />
           </div>
         ): (
-          <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>{fundData?.fund.reason ?? ''}</h1>
+          <div className='w-full mt-10 mb-5 flex items-center'>
+            <div className='mx-6'>
+              <button onClick={() => router.back()} className='flex items-center justify-center bg-blue-10 h-12 w-12 rounded-full'>
+                <ArrowBackIcon className='text-blue-100 w-7 h-7' />
+              </button>
+            </div>
+            <h1 className='text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>{fundData?.fund.reason ?? ''}</h1>
+          </div>
         )}
 
         <div className='mx-5 mt-5 flex-1'>
@@ -141,8 +156,8 @@ export const FundDetails = () => {
             <Table sx={{ width: '100%' }} size="small" stickyHeader aria-label="a dense table">
               <StyledTableHead>
                 <TableRow>
-                  <StyledTableHeaderCell width={'50%'}>Reason</StyledTableHeaderCell>
-                  <StyledTableHeaderCell width={'50%'}>Description</StyledTableHeaderCell>
+                  <StyledTableHeaderCell width={'50%'}>Contributor</StyledTableHeaderCell>
+                  <StyledTableHeaderCell width={'50%'}>Amount</StyledTableHeaderCell>
                 </TableRow>
               </StyledTableHead>
               <TableBody>

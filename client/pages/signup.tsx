@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from "next/router";
 import CircularProgress from '@mui/material/CircularProgress';
 import { BASE_URL, TOKEN } from '../utils/constants';
+import Swal from 'sweetalert2';
 
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   [`&.${formControlClasses.root}`]: {
@@ -67,7 +68,11 @@ export const Signup = () => {
       login()
     } catch (error) {
       console.log({error})
-      window.alert(error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `${error}`,
+      });
       setLoading(false)
       setDisabled(false)
     }
@@ -97,7 +102,11 @@ export const Signup = () => {
       router.push(`/${query?.to ? query.to : ''}`);
     } catch (error) {
       console.log({error})
-      window.alert(error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `${error}`,
+      });
       setLoading(false)
       setDisabled(false)
     }

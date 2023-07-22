@@ -13,6 +13,8 @@ import { useAuth } from '../../utils/hooks';
 import { useRouter } from "next/router";
 import { gql, useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
+import Swal from 'sweetalert2';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function createData(
   name: string,
@@ -90,7 +92,11 @@ export const Funds = () => {
     }
   }, [data]);
 
-  if (error) return window.alert(error.message);
+  if (error) return Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: `${error.message}`,
+  });
 
   return (
     <div className="h-screen min-h-screen flex bg-white">
@@ -101,7 +107,14 @@ export const Funds = () => {
       </Head>
 
       <main className='w-full flex flex-col'>
-        <h1 className='mt-5 text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>Funds</h1>
+        <div className='w-full mt-10 mb-5 flex items-center'>
+          <div className='mx-6'>
+            <button onClick={() => router.back()} className='flex items-center justify-center bg-blue-10 h-12 w-12 rounded-full'>
+              <ArrowBackIcon className='text-blue-100 w-7 h-7' />
+            </button>
+          </div>
+          <h1 className='text-dark_blue-100 text-3xl text-center font-semibold tracking-[-1px]'>Funds</h1>
+        </div>
 
         {loading ? (
           <div className=' mt-5 flex justify-center items-center'>
@@ -113,8 +126,8 @@ export const Funds = () => {
               <Table sx={{ width: '100%' }} size="small" aria-label="a dense table">
                 <StyledTableHead>
                   <TableRow>
-                    <StyledTableHeaderCell width={'50%'}>Name</StyledTableHeaderCell>
-                    <StyledTableHeaderCell width={'50%'}>Amount</StyledTableHeaderCell>
+                    <StyledTableHeaderCell width={'50%'}>Reason</StyledTableHeaderCell>
+                    <StyledTableHeaderCell width={'50%'}>Description</StyledTableHeaderCell>
                     {/* <StyledTableHeaderCell align="center" width={'25%'}>Status</StyledTableHeaderCell> */}
                   </TableRow>
                 </StyledTableHead>

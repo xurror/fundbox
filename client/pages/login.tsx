@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from "next/router";
 import CircularProgress from '@mui/material/CircularProgress';
 import { BASE_URL, TOKEN } from '../utils/constants';
+import Swal from 'sweetalert2';
 
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   [`&.${formControlClasses.root}`]: {
@@ -60,15 +61,24 @@ export const login = () => {
       const data = await response.json();
 
       if (response.status !== 200) {
-        return window.alert(data.message)
+        return Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: `${data.message}`,
+        })
       }
       localStorage.setItem(TOKEN, data.token);
       router.push(`/${query?.to ? query.to : ''}`);
     } catch (error) {
       console.log({error})
-      window.alert(error)
+      // window.alert(error)
       setLoading(false)
       setDisabled(false)
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `${error}`,
+      })
     }
   }
 

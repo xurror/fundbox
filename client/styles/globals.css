@@ -44,3 +44,11 @@ a {
 .css-1ka5eyc-MuiPaper-root-MuiMenu-paper-MuiPopover-paper {
   border-radius: 8px;
 }
+
+.swal2-show {
+  border-radius: 20px;
+}
+
+.swal2-confirm {
+  background-color: #4C51C6 !important;
+}
