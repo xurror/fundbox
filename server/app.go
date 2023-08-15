@@ -28,6 +28,7 @@ func main() {
 			service.NewAuthService,
 			service.NewContributionService,
 			service.NewFundService,
+			service.NewCurrencyService,
 		),
 		fx.Provide(
 			controller.NewAuthController,

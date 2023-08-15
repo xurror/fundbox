@@ -20,6 +20,7 @@ type AppConfig struct {
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
 		Name     string `yaml:"name"`
+		Sslmode  string `yaml:"sslmode"`
 	} `yaml:"database"`
 
 	Jwt struct {

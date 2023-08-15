@@ -7,6 +7,7 @@ database:
   user: ${DB_USERNAME}
   password: ${DB_PASSWORD}
   name: ${DB_NAME}
+  sslmode: ${DB_SSLMODE}
 jwt:
   signingKey: ${JWT_SIGNING_KEY}
   expiration: ${JWT_EXPIRATION}

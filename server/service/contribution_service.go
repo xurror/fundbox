@@ -45,7 +45,7 @@ func (s *ContributionService) GetContributions(limit, offset int) ([]*model.Cont
 
 func (s *ContributionService) GetContributionsByUserID(userID uuid.UUID, limit, offset int) ([]*model.Contribution, error) {
 	var contributions []*model.Contribution
-	result := s.db.Limit(limit).Find(&contributions, "contributor_id = ?", userID)
+	result := s.db.Preload(clause.Associations).Limit(limit).Find(&contributions, "contributor_id = ?", userID)
 	return contributions, model.HandleError(result.Error)
 }
 

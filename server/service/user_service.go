@@ -6,6 +6,7 @@ import (
 	"getting-to-go/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // UserService provides user-related services
@@ -45,25 +46,27 @@ func (s *UserService) CreateUserFromInput(input generated.NewUser) (*model.User,
 
 func (s *UserService) GetUser(id uuid.UUID) (*model.User, error) {
 	user := &model.User{}
-	result := s.db.First(&user, id)
+	result := s.db.Preload(clause.Associations).First(&user, id)
 	return user, model.HandleError(result.Error)
 }
 
 func (s *UserService) GetUsers(limit, offset int) ([]*model.User, error) {
 	var users []*model.User
-	result := s.db.Limit(limit).Offset(offset).Find(&users)
+	result := s.db.Preload(clause.Associations).Limit(limit).Offset(offset).Find(&users)
 	return users, model.HandleError(result.Error)
 }
 
 func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
 	user := &model.User{}
-	result := s.db.First(&user, "email = ?", email)
+	result := s.db.Preload(clause.Associations).First(&user, "email = ?", email)
 	return user, model.HandleError(result.Error)
 }
 
 func (s *UserService) GetUserContributions(userID uuid.UUID, limit, offset int) ([]*model.Contribution, error) {
 	var contributions []*model.Contribution
-	result := s.db.Limit(limit).
+	result := s.db.
+		Preload(clause.Associations).
+		Limit(limit).
 		Offset(offset).
 		Find(&contributions, "contributor_id = ?", userID)
 	return contributions, model.HandleError(result.Error)
