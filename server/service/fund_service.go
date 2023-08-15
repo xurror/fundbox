@@ -5,6 +5,7 @@ import (
 	"getting-to-go/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FundService struct {
@@ -28,19 +29,22 @@ func (s *FundService) CreateFund(reason, description string) (*model.Fund, error
 
 func (s *FundService) GetFund(id uuid.UUID) (*model.Fund, error) {
 	fund := &model.Fund{}
-	result := s.db.First(&fund, "id = ?", id)
+	result := s.db.Preload(clause.Associations).First(&fund, "id = ?", id)
 	return fund, model.HandleError(result.Error)
 }
 
 func (s *FundService) GetFunds(limit, offset int) ([]*model.Fund, error) {
 	var funds []*model.Fund
-	result := s.db.Limit(limit).Offset(offset).Find(&funds)
+	result := s.db.Preload(clause.Associations).Limit(limit).Offset(offset).Find(&funds)
 	return funds, model.HandleError(result.Error)
 }
 
 func (s *FundService) GetFundContributions(fundID uuid.UUID, limit, offset int) ([]*model.Contribution, error) {
 	var contributions []*model.Contribution
-	result := s.db.Limit(limit).
+	result := s.db.
+		Preload(clause.Associations).
+		Preload("Amount.Currency").
+		Limit(limit).
 		Offset(offset).
 		Find(&contributions, "fund_id = ?", fundID)
 	return contributions, model.HandleError(result.Error)

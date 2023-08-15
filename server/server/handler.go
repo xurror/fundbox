@@ -18,6 +18,7 @@ type GraphQlHandler struct {
 	userService         *service.UserService
 	authService         *service.AuthService
 	fundService         *service.FundService
+	currencyService     *service.CurrencyService
 	contributionService *service.ContributionService
 }
 
@@ -25,12 +26,14 @@ func NewGraphQlHandler(
 	userService *service.UserService,
 	authService *service.AuthService,
 	fundService *service.FundService,
+	currencyService *service.CurrencyService,
 	contributionService *service.ContributionService,
 ) *GraphQlHandler {
 	return &GraphQlHandler{
 		userService:         userService,
 		authService:         authService,
 		fundService:         fundService,
+		currencyService:     currencyService,
 		contributionService: contributionService,
 	}
 }
@@ -45,6 +48,7 @@ func (g *GraphQlHandler) QueryHandler() echo.HandlerFunc {
 		UserService:         g.userService,
 		AuthService:         g.authService,
 		FundService:         g.fundService,
+		CurrencyService:     g.currencyService,
 		ContributionService: g.contributionService,
 	}}
 

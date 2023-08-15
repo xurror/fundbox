@@ -1,4 +1,5 @@
 type Query {
+    currencies: [Currency!]!
     funds(limit: Int, offset: Int): [Fund!]!
     fund(id: ID!): Fund!
     fundContributions(fund_id: ID, limit: Int, offset: Int): [Contribution!]!

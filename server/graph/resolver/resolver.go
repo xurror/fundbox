@@ -13,6 +13,7 @@ import (
 type Resolver struct {
 	UserService         *service.UserService
 	FundService         *service.FundService
+	CurrencyService     *service.CurrencyService
 	ContributionService *service.ContributionService
 	AuthService         *service.AuthService
 }

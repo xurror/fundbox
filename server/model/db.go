@@ -33,8 +33,8 @@ func (entity *Persistable) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 func NewDB(c *config.AppConfig) *gorm.DB {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Database.Host, c.Database.Port, c.Database.User, c.Database.Password, c.Database.Name, c.Database.Sslmode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

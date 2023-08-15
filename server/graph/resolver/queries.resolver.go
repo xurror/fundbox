@@ -10,8 +10,14 @@ import (
 	"getting-to-go/graph/generated"
 	"getting-to-go/model"
 	"getting-to-go/util"
+
 	"github.com/google/uuid"
 )
+
+// Currencies is the resolver for the currencies field.
+func (r *queryResolver) Currencies(ctx context.Context) ([]*model.Currency, error) {
+	return r.CurrencyService.GetCurrencies()
+}
 
 // Funds is the resolver for the funds field.
 func (r *queryResolver) Funds(ctx context.Context, limit *int, offset *int) ([]*model.Fund, error) {
