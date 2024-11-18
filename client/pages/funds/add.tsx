@@ -125,7 +125,7 @@ export default function Add() {
 
         <div className='flex flex-1 flex-col items-center'>
           <div className=''>
-            <h1 className='text-dark_blue-100 text-4xl text-center font-semibold tracking-[-1px]'>Welcome, xurro</h1>
+            <h1 className='text-dark_blue-100 text-4xl text-center font-semibold tracking-[-1px]'>Welcome, xurror</h1>
             <p className='text-dark_blue-80 text-lg text-center'>Enter required fund details below.</p>
           </div>
 

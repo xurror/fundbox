@@ -90,7 +90,7 @@ export const login = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className='flex flex-1 flex-col items-center justify-center'>
+      <div className='container mx-auto px-4 flex flex-1 flex-col items-center justify-center'>
         <div className='mt-10'>
           <h1 className='text-dark_blue-100 text-4xl text-center font-semibold tracking-[-1px]'>Login</h1>
         </div>

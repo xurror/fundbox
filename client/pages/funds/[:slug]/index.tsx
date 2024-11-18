@@ -10,7 +10,7 @@ import { styled } from '@mui/material/styles';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import Link from 'next/link';
 import dynamic from 'next/dynamic'
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from "next/router";
 import Swal from 'sweetalert2';
@@ -25,7 +25,7 @@ function createData(
 }
 
 const rows = [
-  createData('Xurro', 5000),
+  createData('Xurror', 5000),
   createData('Abdoul', 2500),
   createData('Nasser', 25000),
 ];
