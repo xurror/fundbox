@@ -1,10 +1,8 @@
 package service
 
 import (
-	"context"
-	appContext "getting-to-go/context"
-	"getting-to-go/graph/generated"
 	"getting-to-go/model"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -49,7 +47,7 @@ func (s *ContributionService) GetContributionsByUserID(userID uuid.UUID, limit, 
 	return contributions, model.HandleError(result.Error)
 }
 
-func (s *ContributionService) Contribute(ctx context.Context, fundID uuid.UUID, input generated.NewContribution) (*model.Contribution, error) {
-	currentUser := appContext.CurrentUser(ctx)
-	return s.CreateContribution(fundID, currentUser.ID, input.Amount, input.Currency)
-}
+// func (s *ContributionService) Contribute(ctx context.Context, fundID uuid.UUID, input generated.NewContribution) (*model.Contribution, error) {
+// 	currentUser := appContext.CurrentUser(ctx)
+// 	return s.CreateContribution(fundID, currentUser.ID, input.Amount, input.Currency)
+// }

@@ -1,26 +1,37 @@
 package model
 
 import (
-	"github.com/lib/pq"
+	"errors"
+
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-type User struct {
-	Auditable
-	FirstName     string         `json:"first_name" gorm:"not null"`
-	LastName      string         `json:"last_name" gorm:"not null"`
-	Email         string         `json:"email" gorm:"unique;not null"`
-	Password      string         `json:"password,omitempty" gorm:"column:password_hash;not null"`
-	Roles         pq.StringArray `json:"roles" gorm:"not null;type:text[]"`
-	Contributions []Contribution `json:"-" gorm:"-"`
+var ErrNotFound = errors.New("not found")
+
+// const (
+// 	UsersTableName = "Fundbox"
+// )
+
+type UsersTable struct {
+	TableName string
 }
 
-func (user *User) HasRoles(roles []Role) bool {
-	for _, role := range roles {
-		for _, userRole := range user.Roles {
-			if string(role) == userRole {
-				return true
-			}
-		}
+type User struct {
+	Persistable
+	Auth0Id string `json:"email" gorm:"unique;not null" dynamodbav:"auth0_id"`
+}
+
+// GetKey returns the composite primary key of the movie in a format that can be
+// sent to DynamoDB.
+func (user User) GetKey() map[string]types.AttributeValue {
+	id, err := attributevalue.Marshal(user.Id)
+	if err != nil {
+		panic(err)
 	}
-	return false
+	auth0Id, err := attributevalue.Marshal(user.Auth0Id)
+	if err != nil {
+		panic(err)
+	}
+	return map[string]types.AttributeValue{"id": id, "auth0_id": auth0Id}
 }

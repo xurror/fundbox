@@ -2,12 +2,12 @@ package server
 
 import (
 	"getting-to-go/service"
-	"github.com/labstack/echo-jwt/v4"
+	"time"
+
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 func CorsConfig() middleware.CORSConfig {
@@ -59,9 +59,6 @@ func RequestLoggerConfig(log *logrus.Logger) middleware.RequestLoggerConfig {
 
 func JwtConfig(authService *service.AuthService) echojwt.Config {
 	return echojwt.Config{
-		SigningKey:     []byte("secret"),
-		SigningMethod:  jwa.HS256.String(),
-		TokenLookup:    "header:Authorization:Bearer",
 		ContextKey:     "user",
 		ParseTokenFunc: authService.Authorize,
 	}

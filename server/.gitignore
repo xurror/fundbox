@@ -1,3 +1,5 @@
 .idea
 graph/generated.go
 config/config.yaml
+
+__debug_bin*

@@ -1,16 +1,17 @@
 package main
 
 import (
-	"getting-to-go/config"
+	appConfig "getting-to-go/config"
 	"getting-to-go/controller"
 	"getting-to-go/logging"
 	"getting-to-go/model"
 	"getting-to-go/server"
 	"getting-to-go/service"
+	"net/http"
+
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
-	"net/http"
 )
 
 func main() {
@@ -19,22 +20,18 @@ func main() {
 			return &logging.AppLogger{Logger: logger}
 		}),
 		fx.Provide(
-			model.NewDB,
 			logging.NewLogger,
-			config.NewAppConfig,
+			appConfig.NewAppConfig,
+			model.NewDynamoDBClient,
 		),
 		fx.Provide(
-			service.NewUserService,
+			service.NewUserServiceDynamoDbImpl,
 			service.NewAuthService,
-			service.NewContributionService,
-			service.NewFundService,
-			service.NewCurrencyService,
 		),
 		fx.Provide(
-			controller.NewAuthController,
+			controller.NewUserController,
 		),
 		fx.Provide(
-			server.NewGraphQlHandler,
 			server.NewServer,
 			server.NewRouter,
 		),

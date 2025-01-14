@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"getting-to-go/config"
 	_type "getting-to-go/type"
-	log "github.com/sirupsen/logrus"
 	"net/http"
-	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,19 +16,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Persistable struct {
-	ID uuid.UUID `json:"id" gorm:"primary_key;type:uuid"`
-}
-
-type Auditable struct {
-	Persistable
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-}
-
 func (entity *Persistable) BeforeCreate(tx *gorm.DB) (err error) {
-	entity.ID = uuid.New()
+	entity.Id = uuid.New()
 	return
 }
 

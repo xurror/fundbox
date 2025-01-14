@@ -1,10 +1,11 @@
 package config
 
 import (
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 // AppConfig contains the configuration for the application
@@ -31,6 +32,24 @@ type AppConfig struct {
 	Logger struct {
 		Level int32 `yaml:"level"`
 	} `yaml:"logger"`
+
+	Aws struct {
+		Region      string `yaml:"region"`
+		Credentials struct {
+			AccessKey string `yaml:"accessKey"`
+			SecretKey string `yaml:"secretKey"`
+		} `yaml:"credentials"`
+	} `yaml:"aws"`
+
+	Auth0 struct {
+		Domain     string `yaml:"domain"`
+		Audience   string `yaml:"audience"`
+		Management struct {
+			ClientId     string `yaml:"clientId"`
+			ClientSecret string `yaml:"clientSecret"`
+			Domain       string `yaml:"domain"`
+		} `yaml:"management"`
+	} `yaml:"auth0"`
 }
 
 func NewAppConfig() *AppConfig {

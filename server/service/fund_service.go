@@ -1,8 +1,8 @@
 package service
 
 import (
-	"getting-to-go/graph/generated"
 	"getting-to-go/model"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -50,10 +50,10 @@ func (s *FundService) GetFundContributions(fundID uuid.UUID, limit, offset int) 
 	return contributions, model.HandleError(result.Error)
 }
 
-func (s *FundService) CreateFundFromInput(input *generated.NewFund) (*model.Fund, error) {
-	description := ""
-	if input.Description.IsSet() {
-		description = *input.Description.Value()
-	}
-	return s.CreateFund(input.Reason, description)
-}
+// func (s *FundService) CreateFundFromInput(input *generated.NewFund) (*model.Fund, error) {
+// 	description := ""
+// 	if input.Description.IsSet() {
+// 		description = *input.Description.Value()
+// 	}
+// 	return s.CreateFund(input.Reason, description)
+// }
