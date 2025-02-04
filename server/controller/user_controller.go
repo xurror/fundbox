@@ -3,7 +3,6 @@ package controller
 import (
 	"getting-to-go/config"
 	"getting-to-go/model"
-	"getting-to-go/service"
 	"net/http"
 	"time"
 
@@ -15,10 +14,10 @@ import (
 type UserController struct {
 	logger      *logrus.Logger
 	config      *config.AppConfig
-	userService service.UserService
+	userService model.UserService
 }
 
-func NewUserController(logger *logrus.Logger, config *config.AppConfig, userService service.UserService) *UserController {
+func NewUserController(logger *logrus.Logger, config *config.AppConfig, userService model.UserService) *UserController {
 	return &UserController{
 		logger:      logger,
 		config:      config,

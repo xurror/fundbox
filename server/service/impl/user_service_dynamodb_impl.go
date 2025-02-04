@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"getting-to-go/model"
 	"time"
 
@@ -18,11 +19,14 @@ import (
 type userServiceDynamoDbImpl struct {
 	logger         *logrus.Logger
 	tableName      string
-	dynamoDbClient *dynamodb.Client
+	dynamoDbClient model.DynamoDBClient
 }
 
 // NewUserService creates a new UserService instance
-func NewUserServiceDynamoDbImpl(logger *logrus.Logger, dynamoDbClient *dynamodb.Client) UserService {
+func NewUserServiceDynamoDbImpl(
+	logger *logrus.Logger,
+	dynamoDbClient model.DynamoDBClient,
+) model.UserService {
 	return &userServiceDynamoDbImpl{
 		logger:         logger,
 		tableName:      "Fundbox-Users",
@@ -93,13 +97,16 @@ func (s *userServiceDynamoDbImpl) createUsersTable(ctx context.Context) (*types.
 }
 
 // CreateUser creates a new user
-func (s *userServiceDynamoDbImpl) CreateUser(ctx context.Context, auth0Id string) (*model.User, error) {
-	user, err := attributevalue.MarshalMap(&model.User{
-		Persistable: model.Persistable{
-			Id: uuid.New(),
-		},
-		Auth0Id: auth0Id,
-	})
+func (s *userServiceDynamoDbImpl) CreateUser(
+	ctx context.Context,
+	auth0Id string,
+) (*model.User, error) {
+	if auth0Id == "" {
+		return nil, errors.New("auth0Id cannot be empty")
+	}
+
+	user := model.NewUser(uuid.New(), auth0Id)
+	userItem, err := attributevalue.MarshalMap(user)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
@@ -109,17 +116,21 @@ func (s *userServiceDynamoDbImpl) CreateUser(ctx context.Context, auth0Id string
 
 	_, err = s.dynamoDbClient.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(s.tableName),
-		Item:      user,
+		Item:      userItem,
 	})
 	if err != nil {
 		s.logger.Debugf("Couldn't add item to table. Here's why: %v\n", err)
+		return nil, err
 	}
 
-	return nil, err
+	return user, err
 }
 
 // GetUser retrieves a user by ID
-func (s *userServiceDynamoDbImpl) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (s *userServiceDynamoDbImpl) GetUserById(
+	ctx context.Context,
+	id uuid.UUID,
+) (*model.User, error) {
 	resp, err := s.dynamoDbClient.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(s.tableName),
 		Key: map[string]types.AttributeValue{
@@ -144,7 +155,10 @@ func (s *userServiceDynamoDbImpl) GetUserById(ctx context.Context, id uuid.UUID)
 }
 
 // GetUser retrieves a user by ID
-func (s *userServiceDynamoDbImpl) GetUserByAuth0Id(ctx context.Context, auth0Id string) (*model.User, error) {
+func (s *userServiceDynamoDbImpl) GetUserByAuth0Id(
+	ctx context.Context,
+	auth0Id string,
+) (*model.User, error) {
 	resp, err := s.dynamoDbClient.Query(ctx, &dynamodb.QueryInput{
 		TableName:              aws.String(s.tableName),
 		IndexName:              aws.String("auth0_id-index"),

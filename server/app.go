@@ -9,14 +9,14 @@ import (
 	"getting-to-go/service"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 )
 
 func main() {
 	app := fx.New(
-		fx.WithLogger(func(logger *log.Logger) fxevent.Logger {
+		fx.WithLogger(func(logger *logrus.Logger) fxevent.Logger {
 			return &logging.AppLogger{Logger: logger}
 		}),
 		fx.Provide(

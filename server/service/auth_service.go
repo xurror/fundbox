@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"getting-to-go/config"
+	"getting-to-go/model"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +32,10 @@ func (c CustomClaims) Validate(ctx context.Context) error {
 type AuthService struct {
 	logger      *logrus.Logger
 	config      *config.AppConfig
-	userService UserService
+	userService model.UserService
 }
 
-func NewAuthService(logger *logrus.Logger, config *config.AppConfig, userService UserService) *AuthService {
+func NewAuthService(logger *logrus.Logger, config *config.AppConfig, userService model.UserService) *AuthService {
 	return &AuthService{
 		logger:      logger,
 		config:      config,

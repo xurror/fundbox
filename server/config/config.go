@@ -10,46 +10,57 @@ import (
 
 // AppConfig contains the configuration for the application
 type AppConfig struct {
-	Server struct {
-		Port string `yaml:"port"`
-		Mode string `yaml:"mode"`
-	} `yaml:"server"`
+	Server   ServerConfig   `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
+	Jwt      JwtConfig      `yaml:"jwt"`
+	Logger   LoggerConfig   `yaml:"logger"`
+	Aws      AwsConfig      `yaml:"aws"`
+	Auth0    Auth0Config    `yaml:"auth0"`
+}
 
-	Database struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		Name     string `yaml:"name"`
-		Sslmode  string `yaml:"sslmode"`
-	} `yaml:"database"`
+type ServerConfig struct {
+	Port string `yaml:"port"`
+	Mode string `yaml:"mode"`
+}
 
-	Jwt struct {
-		SigningKey string        `yaml:"signingKey"`
-		Expiration time.Duration `yaml:"expiration"`
-	} `yaml:"jwt"`
+type DatabaseConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"name"`
+	Sslmode  string `yaml:"sslmode"`
+}
 
-	Logger struct {
-		Level int32 `yaml:"level"`
-	} `yaml:"logger"`
+type JwtConfig struct {
+	SigningKey string        `yaml:"signingKey"`
+	Expiration time.Duration `yaml:"expiration"`
+}
 
-	Aws struct {
-		Region      string `yaml:"region"`
-		Credentials struct {
-			AccessKey string `yaml:"accessKey"`
-			SecretKey string `yaml:"secretKey"`
-		} `yaml:"credentials"`
-	} `yaml:"aws"`
+type LoggerConfig struct {
+	Level int32 `yaml:"level"`
+}
 
-	Auth0 struct {
-		Domain     string `yaml:"domain"`
-		Audience   string `yaml:"audience"`
-		Management struct {
-			ClientId     string `yaml:"clientId"`
-			ClientSecret string `yaml:"clientSecret"`
-			Domain       string `yaml:"domain"`
-		} `yaml:"management"`
-	} `yaml:"auth0"`
+type AwsConfig struct {
+	Region      string         `yaml:"region"`
+	Credentials AwsCredentials `yaml:"credentials"`
+}
+
+type AwsCredentials struct {
+	AccessKey string `yaml:"accessKey"`
+	SecretKey string `yaml:"secretKey"`
+}
+
+type Auth0Config struct {
+	Domain     string          `yaml:"domain"`
+	Audience   string          `yaml:"audience"`
+	Management Auth0Management `yaml:"management"`
+}
+
+type Auth0Management struct {
+	ClientId     string `yaml:"clientId"`
+	ClientSecret string `yaml:"clientSecret"`
+	Domain       string `yaml:"domain"`
 }
 
 func NewAppConfig() *AppConfig {
