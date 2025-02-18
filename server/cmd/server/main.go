@@ -1,3 +1,8 @@
+// @title Community Funds API
+// @version 1.0
+// @description API documentation for the Community Funds system
+// @host localhost:8080
+// @BasePath /api
 package main
 
 import (
