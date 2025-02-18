@@ -20,13 +20,18 @@ func NewLogger(config *config.Config) *logrus.Logger {
 		},
 	})
 	logger.SetOutput(os.Stdout)
-	logger.SetLevel((logrus.Level)(config.LogLevel))
+
+	logLevel := logrus.Level(config.LogLevel)
+	// if logLevel == 0 {
+	// 	logLevel = logrus.DebugLevel
+	// }
+	logger.SetLevel(logLevel)
 
 	return logger
 }
 
 type Logger struct {
-	Logger *logrus.Logger
+	*logrus.Logger
 }
 
 var _ fxevent.Logger = (*Logger)(nil)
