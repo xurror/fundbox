@@ -10,11 +10,16 @@ import (
 	"community-funds/internal/services"
 	"community-funds/pkg/logger"
 
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 )
 
 func main() {
 	app := fx.New(
+		fx.WithLogger(func(logrus *logrus.Logger) fxevent.Logger {
+			return &logger.Logger{Logger: logrus}
+		}),
 		fx.Provide(
 			config.NewConfig,
 			logger.NewLogger,

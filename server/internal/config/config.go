@@ -9,11 +9,11 @@ import (
 type Config struct {
 	Port        string `mapstructure:"PORT"`
 	DatabaseURL string `mapstructure:"DATABASE_URL"`
-	LogLevel    int32  `mapstructure:"LOG_LEVEL"`
+	LogLevel    uint32 `mapstructure:"LOG_LEVEL"`
 }
 
 func NewConfig() *Config {
-	viper.SetConfigFile("./configs/config.yaml")
+	viper.SetConfigFile("config.yaml")
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
