@@ -1,9 +1,100 @@
 basePath: /api
+definitions:
+  models.Contribution:
+    properties:
+      amount:
+        type: number
+      anonymous:
+        type: boolean
+      contributorID:
+        description: Nullable for anonymous contributions
+        type: string
+      createdAt:
+        type: string
+      fundID:
+        type: string
+      id:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Fund:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      managerID:
+        type: string
+      name:
+        type: string
+      targetAmount:
+        type: number
+      updatedAt:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: API documentation for the Community Funds system
   title: Community Funds API
   version: "1.0"
-paths: {}
+paths:
+  /contributions:
+    post:
+      consumes:
+      - application/json
+      description: Anyone can contribute to a fund, authenticated users are tracked,
+        anonymous users are allowed
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Contribution'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Make a contribution
+      tags:
+      - contributions
+  /funds:
+    post:
+      consumes:
+      - application/json
+      description: Fund managers can create a fund with a target amount
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Fund'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a fund
+      tags:
+      - funds
 swagger: "2.0"
