@@ -11,5 +11,5 @@ func NewUserService(r *repositories.UserRepository) *UserService {
 }
 
 func (s *UserService) GetAllUsers() []string {
-	return s.Repo.GetAll()
+	return nil
 }
