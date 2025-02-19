@@ -1,15 +1,20 @@
 package services
 
-import "community-funds/internal/repositories"
+import (
+	"community-funds/internal/models"
+	"community-funds/internal/repositories"
+)
 
 type UserService struct {
-	Repo *repositories.UserRepository
+	repo *repositories.UserRepository
 }
 
-func NewUserService(r *repositories.UserRepository) *UserService {
-	return &UserService{Repo: r}
+func NewUserService(repo *repositories.UserRepository) *UserService {
+	return &UserService{repo}
 }
 
-func (s *UserService) GetAllUsers() []string {
-	return nil
+func (s *UserService) RegisterUser(name, email, auth0ID, role string) (*models.User, error) {
+	user := &models.User{Name: name, Email: email, Auth0ID: auth0ID, Role: role}
+	err := s.repo.CreateUser(user)
+	return user, err
 }

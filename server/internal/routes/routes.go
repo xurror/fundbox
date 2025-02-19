@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"community-funds/internal/config"
 	"community-funds/internal/handlers"
+	"community-funds/internal/middlewares"
+	"community-funds/internal/repositories"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,12 +15,24 @@ import (
 )
 
 type Router struct {
-	FundHandler *handlers.FundHandler
-	UserHandler *handlers.UserHandler
+	Cfg                 *config.Config
+	UserRepo            *repositories.UserRepository
+	FundHandler         *handlers.FundHandler
+	ContributionHandler *handlers.ContributionHandler
 }
 
-func NewRouter(fundHandler *handlers.FundHandler, userHandler *handlers.UserHandler) *Router {
-	return &Router{FundHandler: fundHandler, UserHandler: userHandler}
+func NewRouter(
+	cfg *config.Config,
+	userRepo *repositories.UserRepository,
+	fundHandler *handlers.FundHandler,
+	contributionHandler *handlers.ContributionHandler,
+) *Router {
+	return &Router{
+		Cfg:                 cfg,
+		UserRepo:            userRepo,
+		FundHandler:         fundHandler,
+		ContributionHandler: contributionHandler,
+	}
 }
 
 func (r *Router) SetupRoutes(router *gin.Engine) {
@@ -27,7 +42,13 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 
 	api := router.Group("/api")
 	{
-		api.GET("/funds", r.FundHandler.GetFunds)
-		api.GET("/users", r.UserHandler.GetUsers)
+
+		// Protected routes (Only Fund Managers)
+		protected := api.Group("/funds")
+		protected.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg))
+		protected.POST("", r.FundHandler.CreateFund)
+
+		// Contributions (Anonymous allowed)
+		api.POST("/contributions", r.ContributionHandler.CreateContribution)
 	}
 }

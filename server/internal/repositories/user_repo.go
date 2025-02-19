@@ -21,7 +21,14 @@ func (r *UserRepository) GetUserByAuth0ID(auth0ID string) (*models.User, error) 
 	return &user, err
 }
 
-// CreateUser creates a new internal user
+// CreateUser inserts a new user into the database
 func (r *UserRepository) CreateUser(user *models.User) error {
 	return r.db.Create(user).Error
+}
+
+// GetUserByID retrieves a user by their internal ID
+func (r *UserRepository) GetUserByID(id string) (*models.User, error) {
+	var user models.User
+	err := r.db.First(&user, "id = ?", id).Error
+	return &user, err
 }

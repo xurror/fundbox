@@ -31,16 +31,18 @@ func main() {
 			db.NewDatabase,
 		),
 		fx.Provide(
+			repositories.NewContributionRepository,
 			repositories.NewFundRepository,
 			repositories.NewUserRepository,
 		),
 		fx.Provide(
+			services.NewContributionService,
 			services.NewFundService,
 			services.NewUserService,
 		),
 		fx.Provide(
+			handlers.NewContributionHandler,
 			handlers.NewFundHandler,
-			handlers.NewUserHandler,
 		),
 		fx.Provide(
 			server.NewGinServer, // Initialize Gin server
