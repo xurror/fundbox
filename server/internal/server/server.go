@@ -5,7 +5,6 @@ import (
 	"community-funds/internal/middlewares"
 	"community-funds/internal/routes"
 	"context"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -17,37 +16,28 @@ type Server struct {
 }
 
 func NewGinServer(logger *logrus.Logger, cfg *config.Config, r *routes.Router) *Server {
-	// gin.SetMode(gin.ReleaseMode) // Set Gin to release mode for performance
-	gin.SetMode(gin.DebugMode) // Set Gin to release mode for performance
-	engine := gin.Default()    // Includes logging and recovery middleware
-
-	r.SetupRoutes(engine) // Register routes
+	engine := gin.New()
 
 	// Middleware
-
-	// Attach Logrus middleware
-	engine.Use(middlewares.GinLogrusMiddleware(logger))
+	engine.Use(middlewares.GinLogrusMiddleware(logger)) // Attach Logrus middleware
 	engine.Use(gin.Recovery())
+
+	r.SetupRoutes(engine) // Register routes
 
 	return &Server{Engine: engine}
 }
 
-func StartServer(lc fx.Lifecycle, s *Server, cfg *config.Config) {
+func StartServer(lc fx.Lifecycle, s *Server, cfg *config.Config, log *logrus.Logger) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func(port string) {
-				if port == "" {
-					port = "8080"
-				}
-				fmt.Printf("Server running on port %s\n", port)
-
 				s.Engine.Run(":" + port)
 			}(cfg.Port)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
 			// Implement graceful shutdown
-			fmt.Printf("Server shutting down\n")
+			log.Debug("Server shutting down\n")
 			return nil
 		},
 	})
