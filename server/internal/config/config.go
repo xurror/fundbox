@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"community-funds/pkg/utils"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,38 +22,8 @@ type Auth0Config struct {
 	Audience string
 }
 
-// findProjectRoot searches for the project's root directory by looking for a known marker file.
-func findProjectRoot() (string, error) {
-	// Start from the current working directory
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	for {
-		// Check for a known project marker (adjust based on your project setup)
-		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir, nil
-		}
-
-		// Move up one directory
-		parent := filepath.Dir(dir)
-		if parent == dir { // If we reach the root directory, stop
-			break
-		}
-		dir = parent
-	}
-
-	return "", fmt.Errorf("project root not found")
-}
-
 func envFilePath(filename string) string {
-	projectRoot, err := findProjectRoot()
-	if err != nil {
-		log.Fatalf("Error finding project root: %v", err)
-	}
-
-	envPath := filepath.Join(projectRoot, filename)
+	envPath := filepath.Join(utils.ProjectRoot(), filename)
 	return envPath
 }
 
@@ -65,13 +35,15 @@ func getEnv(key, def string) string {
 	return def
 }
 
-func parseUint(s string) uint {
-	number, _ := strconv.ParseUint(s, 10, 32)
+func parseUint(s string, defaultVal int) uint {
+	number, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		return uint(defaultVal)
+	}
 	return uint(number)
 }
 
 func NewConfig() *Config {
-	// Load environment variables from .env in project root, if it exists.
 	envPath := envFilePath(".env")
 
 	// Load environment variables from that file, if present
@@ -83,7 +55,7 @@ func NewConfig() *Config {
 	// Read each setting or use a default if not set.
 	return &Config{
 		Port:        getEnv("PORT", "8080"),
-		LogLevel:    uint32(parseUint(getEnv("LOG_LEVEL", "1"))),
+		LogLevel:    uint32(parseUint(getEnv("LOG_LEVEL", "1"), 1)),
 		DatabaseDSN: getEnv("DATABASE_DSN", "host=localhost user=postgres dbname=postgres sslmode=disable"),
 		Auth0: Auth0Config{
 			Domain:   getEnv("AUTH0_DOMAIN", ""),
