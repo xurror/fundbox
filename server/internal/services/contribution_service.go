@@ -15,16 +15,14 @@ func NewContributionService(repo *repositories.ContributionRepository) *Contribu
 	return &ContributionService{repo}
 }
 
-func (s *ContributionService) MakeContribution(fundID, contributorID string, amount float64, anonymous bool) (*models.Contribution, error) {
-	fundUUID, err := uuid.Parse(fundID)
-	if err != nil {
-		return nil, err
+func (s *ContributionService) MakeContribution(fundID uuid.UUID, contributorID *uuid.UUID, amount float64, anonymous bool) (*models.Contribution, error) {
+
+	contribution := &models.Contribution{
+		FundID:        fundID,
+		ContributorID: contributorID,
+		Amount:        amount,
+		Anonymous:     anonymous,
 	}
-	contributorUUID, err := uuid.Parse(contributorID)
-	if err != nil {
-		return nil, err
-	}
-	contribution := &models.Contribution{FundID: fundUUID, ContributorID: &contributorUUID, Amount: amount, Anonymous: anonymous}
-	err = s.repo.CreateContribution(contribution)
+	err := s.repo.CreateContribution(contribution)
 	return contribution, err
 }

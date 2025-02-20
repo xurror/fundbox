@@ -14,7 +14,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-// GetUserByAuth0ID finds an internal user by Auth0 user ID
+// GetUserByAuth0ID finds a user by their Auth0 ID
 func (r *UserRepository) GetUserByAuth0ID(auth0ID string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("auth0_id = ?", auth0ID).First(&user).Error
@@ -29,6 +29,6 @@ func (r *UserRepository) CreateUser(user *models.User) error {
 // GetUserByID retrieves a user by their internal ID
 func (r *UserRepository) GetUserByID(id string) (*models.User, error) {
 	var user models.User
-	err := r.db.First(&user, "id = ?", id).Error
+	err := r.db.Preload("FundsManaged").Preload("Contributions").First(&user, "id = ?", id).Error
 	return &user, err
 }

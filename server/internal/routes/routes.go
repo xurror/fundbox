@@ -7,6 +7,7 @@ import (
 	"community-funds/internal/repositories"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	_ "community-funds/docs" // Import Swagger docs
 
@@ -16,6 +17,7 @@ import (
 
 type Router struct {
 	Cfg                 *config.Config
+	Logger              *logrus.Logger
 	UserRepo            *repositories.UserRepository
 	FundHandler         *handlers.FundHandler
 	ContributionHandler *handlers.ContributionHandler
@@ -23,12 +25,14 @@ type Router struct {
 
 func NewRouter(
 	cfg *config.Config,
+	logger *logrus.Logger,
 	userRepo *repositories.UserRepository,
 	fundHandler *handlers.FundHandler,
 	contributionHandler *handlers.ContributionHandler,
 ) *Router {
 	return &Router{
 		Cfg:                 cfg,
+		Logger:              logger,
 		UserRepo:            userRepo,
 		FundHandler:         fundHandler,
 		ContributionHandler: contributionHandler,
@@ -45,7 +49,7 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 
 		// Protected routes (Only Fund Managers)
 		protected := api.Group("/funds")
-		protected.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg))
+		protected.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg, r.Logger))
 		protected.POST("", r.FundHandler.CreateFund)
 
 		// Contributions (Anonymous allowed)

@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { NewFundForm } from "@/components/new-fund-form";
 import {
 	Breadcrumb,
 	BreadcrumbList,
@@ -50,6 +51,9 @@ export default async function Layout({
 								</BreadcrumbItem>
 							</BreadcrumbList>
 						</Breadcrumb>
+					</div>
+					<div className="ml-auto px-3">
+						<NewFundForm />
 					</div>
 				</header>
 				<>

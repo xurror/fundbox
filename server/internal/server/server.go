@@ -21,6 +21,7 @@ func NewGinServer(logger *logrus.Logger, cfg *config.Config, r *routes.Router) *
 	// Middleware
 	engine.Use(middlewares.GinLogrusMiddleware(logger)) // Attach Logrus middleware
 	engine.Use(gin.Recovery())
+	engine.Use(middlewares.CorsMiddleware()) // Enable CORS
 
 	r.SetupRoutes(engine) // Register routes
 

@@ -22,9 +22,6 @@ func NewLogger(config *config.Config) *logrus.Logger {
 	logger.SetOutput(os.Stdout)
 
 	logLevel := logrus.Level(config.LogLevel)
-	// if logLevel == 0 {
-	// 	logLevel = logrus.DebugLevel
-	// }
 	logger.SetLevel(logLevel)
 
 	return logger
