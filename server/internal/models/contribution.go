@@ -15,4 +15,8 @@ type Contribution struct {
 	Amount        float64    `gorm:"type:decimal(12,2);not null;check:amount > 0"`
 	CreatedAt     time.Time  `gorm:"autoCreateTime"`
 	UpdatedAt     time.Time  `gorm:"autoUpdateTime"`
+
+	// Relationships
+	Fund        Fund `gorm:"foreignKey:FundID"`        // Fund receiving the contribution
+	Contributor User `gorm:"foreignKey:ContributorID"` // The user who made the contribution
 }

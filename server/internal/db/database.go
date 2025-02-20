@@ -2,6 +2,7 @@ package db
 
 import (
 	"community-funds/internal/config"
+	"community-funds/internal/models"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -23,5 +24,20 @@ func NewDatabase(cfg *config.Config, log *logrus.Logger) *gorm.DB {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
+	runMigrations(db, log)
+
 	return db
+}
+
+func runMigrations(db *gorm.DB, log *logrus.Logger) {
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.Contribution{},
+		&models.Fund{},
+	)
+
+	if err != nil {
+		log.Panicf("Failed to migrate database: %v", err)
+	}
 }

@@ -30,11 +30,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useUser } from "@auth0/nextjs-auth0"
+import Link from "next/link"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { user } = useUser()
-  
+
   if (!user) {
     return null
   }
@@ -100,9 +101,11 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <DropdownMenuItem asChild>
+              <Link href="/auth/logout">
+                <LogOut />
+                Log out
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

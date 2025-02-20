@@ -13,7 +13,7 @@ import (
 type Config struct {
 	Port        string
 	DatabaseDSN string // see: https://gorm.io/docs/connecting_to_the_database.html#PostgreSQL
-	LogLevel    uint32
+	LogLevel    uint64
 	Auth0       Auth0Config
 }
 
@@ -28,19 +28,43 @@ func envFilePath(filename string) string {
 }
 
 // Helper to read an env var or use default.
-func getEnv(key, def string) string {
+func getStringEnv(key, def string) string {
 	if val, ok := os.LookupEnv(key); ok {
 		return val
 	}
 	return def
 }
 
-func parseUint(s string, defaultVal int) uint {
-	number, err := strconv.ParseUint(s, 10, 32)
-	if err != nil {
-		return uint(defaultVal)
+// Helper to read an env var or use default.
+func getIntEnv(key string, def int64) int64 {
+	parseInt := func(s string) int64 {
+		if number, ok := strconv.ParseInt(s, 10, 64); ok == nil {
+			return number
+		}
+		log.Panicf("Error parsing %s as int", s)
+		return 0
 	}
-	return uint(number)
+
+	if val, ok := os.LookupEnv(key); ok {
+		return parseInt(val)
+	}
+	return def
+}
+
+// Helper to read an env var or use default.
+func getUintEnv(key string, def uint64) uint64 {
+	parseUint := func(s string) uint64 {
+		if number, ok := strconv.ParseUint(s, 10, 64); ok == nil {
+			return number
+		}
+		log.Panicf("Error parsing %s as uint", s)
+		return 0
+	}
+
+	if val, ok := os.LookupEnv(key); ok {
+		return parseUint(val)
+	}
+	return def
 }
 
 func NewConfig() *Config {
@@ -54,12 +78,12 @@ func NewConfig() *Config {
 
 	// Read each setting or use a default if not set.
 	return &Config{
-		Port:        getEnv("PORT", "8080"),
-		LogLevel:    uint32(parseUint(getEnv("LOG_LEVEL", "1"), 1)),
-		DatabaseDSN: getEnv("DATABASE_DSN", "host=localhost user=postgres dbname=postgres sslmode=disable"),
+		Port:        getStringEnv("PORT", "8080"),
+		LogLevel:    getUintEnv("LOG_LEVEL", 1),
+		DatabaseDSN: getStringEnv("DATABASE_DSN", "host=localhost user=postgres dbname=community_funds sslmode=disable"),
 		Auth0: Auth0Config{
-			Domain:   getEnv("AUTH0_DOMAIN", ""),
-			Audience: getEnv("AUTH0_AUDIENCE", ""),
+			Domain:   getStringEnv("AUTH0_DOMAIN", ""),
+			Audience: getStringEnv("AUTH0_AUDIENCE", ""),
 		},
 	}
 }

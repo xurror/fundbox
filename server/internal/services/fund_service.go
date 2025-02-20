@@ -8,20 +8,25 @@ import (
 )
 
 type FundService struct {
-	repo *repositories.FundRepository
+	fundRepo *repositories.FundRepository
 }
 
-func NewFundService(repo *repositories.FundRepository) *FundService {
-	return &FundService{repo}
+func NewFundService(fundRepo *repositories.FundRepository) *FundService {
+	return &FundService{fundRepo}
 }
 
-func (s *FundService) CreateFund(name string, managerID string, targetAmount float64) (*models.Fund, error) {
-	managerUUID, err := uuid.Parse(managerID)
-	if err != nil {
-		return nil, err
+// CreateFund associates a fund with a user (making them a fund manager)
+func (s *FundService) CreateFund(name string, managerID uuid.UUID, targetAmount float64) (*models.Fund, error) {
+	fund := &models.Fund{
+		Name:         name,
+		ManagerID:    managerID,
+		TargetAmount: targetAmount,
 	}
-
-	fund := &models.Fund{Name: name, ManagerID: managerUUID, TargetAmount: targetAmount}
-	err = s.repo.CreateFund(fund)
+	err := s.fundRepo.CreateFund(fund)
 	return fund, err
+}
+
+// GetFundsManagedByUser retrieves all funds managed by a user
+func (s *FundService) GetFundsManagedByUser(userID string) ([]models.Fund, error) {
+	return s.fundRepo.GetFundsByManager(userID)
 }

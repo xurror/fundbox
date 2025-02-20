@@ -6,6 +6,7 @@ import (
 	"community-funds/internal/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ContributionHandler handles contribution-related routes
@@ -29,23 +30,25 @@ func NewContributionHandler(s *services.ContributionService) *ContributionHandle
 // @Router /contributions [post]
 func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 	var req struct {
-		FundID string  `json:"fund_id" binding:"required"`
-		Amount float64 `json:"amount" binding:"required"`
+		FundID uuid.UUID `json:"fund_id" binding:"required"`
+		Amount float64   `json:"amount" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	var anonymous bool
+	var contributorID *uuid.UUID
 
-	contributorID, exists := c.Get("user_id")
-	anonymous := !exists // If no user, contribution is anonymous
-
-	contributorIDStr := ""
-	if exists {
-		contributorIDStr = contributorID.(string)
+	if id, exists := c.Get("user_id"); exists {
+		contributorID = id.(*uuid.UUID)
+		anonymous = false
+	} else {
+		anonymous = true
 	}
-	contribution, err := h.Service.MakeContribution(req.FundID, contributorIDStr, req.Amount, anonymous)
+
+	contribution, err := h.Service.MakeContribution(req.FundID, contributorID, req.Amount, anonymous)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to contribute"})
 		return
