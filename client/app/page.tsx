@@ -1,14 +1,22 @@
+import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
 import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await auth0.getSession()
   if (!session) {
-    console.log("No session found")
+    return redirect("/login")
   }
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <header className="flex flex-col gap-8 row-start-1 items-center sm:items-start">
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/auth/logout">Login</Link>
+        </Button>
+      </header>
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
