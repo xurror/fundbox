@@ -45,15 +45,19 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := router.Group("/api")
+	api.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg, r.Logger))
 	{
+		funds := api.Group("/funds")
+		{
+			funds.POST("", r.FundHandler.CreateFund)
+			funds.GET("", r.FundHandler.GetFunds)
+			funds.GET("/contributed", r.FundHandler.GetContributedFunds)
+		}
 
-		// Protected routes (Only Fund Managers)
-		protected := api.Group("/funds")
-		protected.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg, r.Logger))
-		protected.POST("", r.FundHandler.CreateFund)
-		protected.GET("", r.FundHandler.GetFunds)
-
-		// Contributions (Anonymous allowed)
-		api.POST("/contributions", r.ContributionHandler.CreateContribution)
+		contributions := api.Group("/contributions")
+		{
+			contributions.POST("", r.ContributionHandler.CreateContribution)
+			contributions.GET("", r.ContributionHandler.GetContributions)
+		}
 	}
 }

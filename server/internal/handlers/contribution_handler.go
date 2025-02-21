@@ -3,7 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	"community-funds/internal/dto"
 	"community-funds/internal/services"
+	"community-funds/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,15 +40,9 @@ func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var anonymous bool
-	var contributorID *uuid.UUID
 
-	if id, exists := c.Get("user_id"); exists {
-		contributorID = id.(*uuid.UUID)
-		anonymous = false
-	} else {
-		anonymous = true
-	}
+	contributorID := utils.GetCurrentUserID(c)
+	anonymous := contributorID == nil
 
 	contribution, err := h.Service.MakeContribution(req.FundID, contributorID, req.Amount, anonymous)
 	if err != nil {
@@ -54,5 +50,50 @@ func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, contribution)
+	c.JSON(http.StatusCreated, dto.MapContributionToDTO(*contribution))
+}
+
+// GetContributions retrieves all contributions for a given fund or contributor or both
+// @Summary Get contributions for a fund
+// @Description Returns all contributions made to a specific fund, including contributor details
+// @Tags contributions
+// @Accept json
+// @Produce json
+// @Query fundId path string true "Fund ID"
+// @Query contributorId path string true "Fund ID"
+// @Success 200 {array} dto.ContributionDTO
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Server Error"
+// @Security BearerAuth
+// @Router /contributions [get]
+func (h *ContributionHandler) GetContributions(c *gin.Context) {
+	var fundID *uuid.UUID
+	fundIDStr := c.Query("fundId")
+	if fundIDStr != "" {
+		uuidVal, err := uuid.Parse(fundIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fund ID"})
+			return
+		}
+		fundID = &uuidVal
+	}
+
+	var contributorID *uuid.UUID
+	contributorIDStr := c.Query("contributorId")
+	if contributorIDStr != "" {
+		uuidVal, err := uuid.Parse(contributorIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contributor ID"})
+			return
+		}
+		contributorID = &uuidVal
+	}
+
+	contributions, err := h.Service.GetContributionsByFund(fundID, contributorID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
 }

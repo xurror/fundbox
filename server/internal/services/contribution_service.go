@@ -26,3 +26,19 @@ func (s *ContributionService) MakeContribution(fundID uuid.UUID, contributorID *
 	err := s.repo.CreateContribution(contribution)
 	return contribution, err
 }
+
+func (s *ContributionService) GetContributionsByFund(fundID, contributorID *uuid.UUID) ([]models.Contribution, error) {
+	contributions, err := s.repo.GetContributionsByFundOrContributor(fundID, contributorID)
+	if err != nil {
+		return nil, err
+	}
+	return contributions, nil
+}
+
+// func (s *ContributionService) GetContributionsByUser(userID *uuid.UUID) ([]models.Contribution, error) {
+// 	contributions, err := s.repo.GetContributionsByUser(userID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return contributions, nil
+// }

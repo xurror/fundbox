@@ -3,6 +3,7 @@ package repositories
 import (
 	"community-funds/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,15 +21,12 @@ func (r *ContributionRepository) CreateContribution(contribution *models.Contrib
 }
 
 // GetContributionsByFund retrieves all contributions for a given fund
-func (r *ContributionRepository) GetContributionsByFund(fundID string) ([]models.Contribution, error) {
+func (r *ContributionRepository) GetContributionsByFundOrContributor(fundID, contributorID *uuid.UUID) ([]models.Contribution, error) {
 	var contributions []models.Contribution
-	err := r.db.Where("fund_id = ?", fundID).Find(&contributions).Error
-	return contributions, err
-}
-
-// GetContributionsByUser retrieves all contributions made by a specific user
-func (r *ContributionRepository) GetContributionsByUser(userID string) ([]models.Contribution, error) {
-	var contributions []models.Contribution
-	err := r.db.Where("contributor_id = ?", userID).Find(&contributions).Error
+	err := r.db.
+		Preload("Contributor").
+		Preload("Fund").
+		Where("fund_id = ? OR contributor_id = ?", fundID, contributorID).
+		Find(&contributions).Error
 	return contributions, err
 }

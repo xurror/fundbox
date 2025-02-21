@@ -21,7 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form"
-import { Plus } from "lucide-react"
+import { Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -29,28 +29,27 @@ import { getAccessToken } from "@auth0/nextjs-auth0"
 import React from "react"
 
 const FormSchema = z.object({
-	name: z.string().min(2, {
-		message: "Name must be at least 2 characters.",
-	}),
-	targetAmount: z.coerce.number().gt(0, {
+	fundId: z.string().uuid(),
+	amount: z.coerce.number().gt(0, {
 		message: 'Target amount must be at least 1.',
 	}),
 })
 
-export function NewFundForm() {
+export function NewContributionForm({ fundId }: { fundId: string }) {
 	const [open, setOpen] = React.useState(false);
-	
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			name: "",
-			targetAmount: "" as any,
+			fundId,
+			amount: "" as any,
 		},
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
+		console.log(data)
 		const token = await getAccessToken();
-		const response = await fetch('/api/funds', {
+		const response = await fetch('/api/contributions', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -59,15 +58,15 @@ export function NewFundForm() {
 			body: JSON.stringify(data)
 		})
 		if (response.ok) {
-			const fund = await response.json()
-			toast.success("Successfully created fund", {
-				description: `You've successfully created fund: ${fund.name}`,
+			const contribution = await response.json()
+			toast.success("Successfully made a contribution", {
+				description: `You've successfully made a contribution of: ${contribution.amount}`,
 			})
 			form.reset()
 			setOpen(false)
 		} else {
-			toast.error("Failed to create fund", {
-				description: "An error occurred while creating the fund.",
+			toast.error("Failed to make contribution", {
+				description: "An error occurred while making your contribution.",
 			})
 		}
 	}
@@ -76,43 +75,29 @@ export function NewFundForm() {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button>
-					<Plus /> Create Fund
+				<Button className="ml-auto" >
+					<Coins /> Make Contribution
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[512px]">
 				<DialogHeader>
-					<DialogTitle>Create a Fund</DialogTitle>
+					<DialogTitle>Make a Contribution</DialogTitle>
 					<DialogDescription>
-						Making an impact starts here.
+						Let's make your contribution count.
 					</DialogDescription>
 				</DialogHeader>
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<div className="grid gap-4 py-4">
+							<Input {...form.register("fundId", { required: true })} type="hidden" />
+
 							<FormField
 								control={form.control}
-								name="name"
+								name="amount"
 								render={({ field }) => (
 									<FormItem className="grid grid-cols-4 items-center gap-4">
-										<FormLabel className="text-right">Name</FormLabel>
-										<FormControl>
-											<Input placeholder="Family Retreat" className="col-span-3" {...field} />
-										</FormControl>
-										{/* <FormDescription className="col-span-3 col-start-2">
-											This is your public display name.
-										</FormDescription> */}
-										<FormMessage className="col-span-3 col-start-2" />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="targetAmount"
-								render={({ field }) => (
-									<FormItem className="grid grid-cols-4 items-center gap-4">
-										<FormLabel className="text-right">Target Amount</FormLabel>
+										<FormLabel className="text-right">Amount</FormLabel>
 										<FormControl>
 											<Input placeholder="1000" className="col-span-3" {...field} />
 										</FormControl>
