@@ -8,13 +8,13 @@ import {
 	BreadcrumbSeparator,
 	BreadcrumbPage
 } from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
 	SidebarProvider,
 	SidebarInset,
 	SidebarTrigger
 } from "@/components/ui/sidebar";
 import { auth0 } from "@/lib/auth0"
-import { Separator } from "@radix-ui/react-separator";
 import { redirect } from "next/navigation"
 
 export default async function Layout({
