@@ -51,6 +51,7 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 		protected := api.Group("/funds")
 		protected.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg, r.Logger))
 		protected.POST("", r.FundHandler.CreateFund)
+		protected.GET("", r.FundHandler.GetFunds)
 
 		// Contributions (Anonymous allowed)
 		api.POST("/contributions", r.ContributionHandler.CreateContribution)
