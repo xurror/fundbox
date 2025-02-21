@@ -79,3 +79,27 @@ func (h *FundHandler) GetFunds(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
 }
+
+// GetContributedFunds retrieves all funds a user has contributed to (excluding those they manage)
+// @Summary Get funds contributed to
+// @Description Returns a list of all funds a user has contributed to but does not manage
+// @Tags funds
+// @Accept json
+// @Produce json
+// @Success 200 {array} dto.FundDTO
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
+// @Security BearerAuth
+// @Router /funds/contributed [get]
+func (h *FundHandler) GetContributedFunds(c *gin.Context) {
+	userID := utils.GetCurrentUserID(c)
+
+	// Fetch funds contributed to (excluding managed funds)
+	funds, err := h.Service.GetContributedFunds(*userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributed funds"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
+}

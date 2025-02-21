@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -20,20 +21,31 @@ import React from "react"
 import { getAccessToken } from "@auth0/nextjs-auth0"
 import Link from "next/link"
 
+type Item = {
+  title: string
+  path: string
+  icon?: LucideIcon
+  isActive?: boolean
+}
+
 export function NavMain({
   items,
 }: {
-  items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
+  items: Item[]
 }) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarMenu>
+        {items.map((item) => (
+          <MenuContent key={item.title} item={item} />
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+}
+
+function MenuContent({ item }: { item: Item }) {
   const [funds, setFunds] = React.useState<{
     id: string
     name: string
@@ -41,9 +53,9 @@ export function NavMain({
   }[]>([])
 
   React.useEffect(() => {
-    async function fetchPosts() {
+    async function fetchFunds() {
       const token = await getAccessToken();
-      const res = await fetch('/api/funds', {
+      const res = await fetch(`/api${item.path}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -52,45 +64,37 @@ export function NavMain({
       const data = await res.json()
       setFunds(data)
     }
-    fetchPosts()
-  }, [])
- 
+    fetchFunds()
+  }, [item.path])
+
   return (
-    <SidebarGroup>
-      {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
-      <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {funds?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.name}>
-                      <SidebarMenuSubButton asChild>
-                        <Link href={`/dashboard/funds/${subItem.id}`}>
-                          <span>{subItem.name}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
+    <Collapsible
+      asChild
+      defaultOpen={item.isActive}
+      className="group/collapsible"
+    >
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton tooltip={item.title}>
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {funds?.map((subItem) => (
+              <SidebarMenuSubItem key={subItem.name}>
+                <SidebarMenuSubButton asChild>
+                  <Link href={`/dashboard/funds/${subItem.id}`}>
+                    <span>{subItem.name}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   )
 }
