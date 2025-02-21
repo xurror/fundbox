@@ -32,7 +32,7 @@ const FormSchema = z.object({
 	name: z.string().min(2, {
 		message: "Name must be at least 2 characters.",
 	}),
-	target_amount: z.coerce.number().gt(0, {
+	targetAmount: z.coerce.number().gt(0, {
 		message: 'Target amount must be at least 1.',
 	}),
 })
@@ -44,7 +44,7 @@ export function NewFundForm() {
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
 			name: "",
-			target_amount: 0,
+			targetAmount: 0,
 		},
 	})
 
@@ -109,7 +109,7 @@ export function NewFundForm() {
 							/>
 							<FormField
 								control={form.control}
-								name="target_amount"
+								name="targetAmount"
 								render={({ field }) => (
 									<FormItem className="grid grid-cols-4 items-center gap-4">
 										<FormLabel className="text-right">Target Amount</FormLabel>

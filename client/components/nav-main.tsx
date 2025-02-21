@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -17,6 +16,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import React from "react"
+import { getAccessToken } from "@auth0/nextjs-auth0"
+import Link from "next/link"
 
 export function NavMain({
   items,
@@ -32,9 +34,30 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const [funds, setFunds] = React.useState<{
+    id: string
+    name: string
+    targetAmount: number
+  }[]>([])
+
+  React.useEffect(() => {
+    async function fetchPosts() {
+      const token = await getAccessToken();
+      const res = await fetch('/api/funds', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      })
+      const data = await res.json()
+      setFunds(data)
+    }
+    fetchPosts()
+  }, [])
+ 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
@@ -53,12 +76,12 @@ export function NavMain({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
+                  {funds?.map((subItem) => (
+                    <SidebarMenuSubItem key={subItem.name}>
                       <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
+                        <Link href={`/dashboard/funds/${subItem.id}`}>
+                          <span>{subItem.name}</span>
+                        </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

@@ -30,7 +30,7 @@ func NewContributionHandler(s *services.ContributionService) *ContributionHandle
 // @Router /contributions [post]
 func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 	var req struct {
-		FundID uuid.UUID `json:"fund_id" binding:"required"`
+		FundID uuid.UUID `json:"fundId" binding:"required"`
 		Amount float64   `json:"amount" binding:"required"`
 	}
 

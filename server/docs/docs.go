@@ -57,6 +57,53 @@ const docTemplate = `{
             }
         },
         "/funds": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a list of all funds where the authenticated user is the manager",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "funds"
+                ],
+                "summary": "Get all funds managed by the authenticated user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.FundDTO"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -78,7 +125,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Fund"
+                            "$ref": "#/definitions/dto.FundDTO"
                         }
                     },
                     "400": {
@@ -104,6 +151,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.FundDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "targetAmount": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Contribution": {
             "type": "object",
             "properties": {
@@ -113,12 +180,28 @@ const docTemplate = `{
                 "anonymous": {
                     "type": "boolean"
                 },
+                "contributor": {
+                    "description": "The user who made the contribution",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
                 "contributorID": {
                     "description": "Nullable for anonymous contributions",
                     "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "fund": {
+                    "description": "Relationships",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Fund"
+                        }
+                    ]
                 },
                 "fundID": {
                     "type": "string"
@@ -134,11 +217,26 @@ const docTemplate = `{
         "models.Fund": {
             "type": "object",
             "properties": {
+                "contributions": {
+                    "description": "Contributions to this fund",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Contribution"
+                    }
+                },
                 "createdAt": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
+                },
+                "manager": {
+                    "description": "Relationships",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
                 },
                 "managerID": {
                     "type": "string"
@@ -148,6 +246,44 @@ const docTemplate = `{
                 },
                 "targetAmount": {
                     "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "auth0ID": {
+                    "description": "Maps to Auth0 user",
+                    "type": "string"
+                },
+                "contributions": {
+                    "description": "Contributions made",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Contribution"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fundsManaged": {
+                    "description": "Relationships",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Fund"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"

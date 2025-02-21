@@ -3,6 +3,7 @@ package repositories
 import (
 	"community-funds/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func (r *FundRepository) GetFundByID(id string) (*models.Fund, error) {
 }
 
 // GetFundsByManager retrieves all funds managed by a specific user
-func (r *FundRepository) GetFundsByManager(managerID string) ([]models.Fund, error) {
+func (r *FundRepository) GetFundsByManager(managerID *uuid.UUID) ([]models.Fund, error) {
 	var funds []models.Fund
 	err := r.db.Where("manager_id = ?", managerID).Find(&funds).Error
 	return funds, err

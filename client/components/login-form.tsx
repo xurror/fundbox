@@ -17,7 +17,7 @@ export function LoginForm({
       <div className="grid gap-6">
 
         <Button asChild className="w-full">
-          <Link href="/auth/login?returnTo=/">Login</Link>
+          <Link href="/auth/login?returnTo=/dashboard">Login</Link>
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">

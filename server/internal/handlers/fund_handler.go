@@ -3,10 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"community-funds/internal/dto"
 	"community-funds/internal/services"
+	"community-funds/pkg/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,13 +24,13 @@ func NewFundHandler(log *logrus.Logger, s *services.FundService) *FundHandler {
 	}
 }
 
-// CreateFund handles fund creation (Only Fund Managers)
+// CreateFund handles fund creation
 // @Summary Create a fund
 // @Description Fund managers can create a fund with a target amount
 // @Tags funds
 // @Accept json
 // @Produce json
-// @Success 201 {object} models.Fund
+// @Success 201 {object} dto.FundDTO
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Security BearerAuth
@@ -37,7 +38,7 @@ func NewFundHandler(log *logrus.Logger, s *services.FundService) *FundHandler {
 func (h *FundHandler) CreateFund(c *gin.Context) {
 	var req struct {
 		Name         string  `json:"name" binding:"required"`
-		TargetAmount float64 `json:"target_amount" binding:"required"`
+		TargetAmount float64 `json:"targetAmount" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -45,19 +46,36 @@ func (h *FundHandler) CreateFund(c *gin.Context) {
 		return
 	}
 
-	var managerID uuid.UUID
-	if id, exists := c.Get("user_id"); exists {
-		managerID = id.(uuid.UUID)
-	} else {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	fund, err := h.Service.CreateFund(req.Name, managerID, req.TargetAmount)
+	managerID := utils.GetCurrentUserID(c)
+	fund, err := h.Service.CreateFund(req.Name, *managerID, req.TargetAmount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create fund"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, fund)
+	c.JSON(http.StatusCreated, dto.MapFundToDTO(*fund))
+}
+
+// GetFunds retrieves all funds managed by the authenticated user
+// @Summary Get all funds managed by the authenticated user
+// @Description Returns a list of all funds where the authenticated user is the manager
+// @Tags funds
+// @Accept json
+// @Produce json
+// @Success 200 {array} dto.FundDTO
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
+// @Security BearerAuth
+// @Router /funds [get]
+func (h *FundHandler) GetFunds(c *gin.Context) {
+	managerID := utils.GetCurrentUserID(c)
+
+	// Fetch funds managed by the user
+	funds, err := h.Service.GetFundsManagedByUser(managerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
 }
