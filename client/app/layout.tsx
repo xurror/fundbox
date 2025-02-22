@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import { Auth0Provider } from "@auth0/nextjs-auth0";
 import { auth0 } from "@/lib/auth0";
+import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +33,12 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Auth0Provider user={session?.user}>
-          {children}
-          <Toaster richColors />
-        </Auth0Provider>
+        <Providers>
+          <Auth0Provider user={session?.user}>
+            {children}
+            <Toaster richColors />
+          </Auth0Provider>
+        </Providers>
       </body>
     </html>
   );
