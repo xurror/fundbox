@@ -1,5 +1,4 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { NewFundForm } from "@/components/new-fund-form";
 import {
 	SidebarProvider,
 	SidebarInset,
@@ -32,9 +31,6 @@ export default async function Layout({
 							className="mr-2 data-[orientation=vertical]:h-4"
 						/>
 						<Navcrumbs />
-					</div>
-					<div className="ml-auto px-3">
-						<NewFundForm />
 					</div>
 				</header>
 				<>
