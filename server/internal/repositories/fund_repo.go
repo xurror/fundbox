@@ -21,7 +21,7 @@ func (r *FundRepository) CreateFund(fund *models.Fund) error {
 }
 
 // GetFundByID retrieves a fund by ID
-func (r *FundRepository) GetFundByID(id string) (*models.Fund, error) {
+func (r *FundRepository) GetFundByID(id uuid.UUID) (*models.Fund, error) {
 	var fund models.Fund
 	err := r.db.Where("id = ?", id).First(&fund).Error
 	return &fund, err
