@@ -55,7 +55,7 @@ export const columns: ColumnDef<Contribution>[] = [
   },
   {
     accessorKey: "amount",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" className="justify-end" />,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
       const formatted = new Intl.NumberFormat("en-US", {
