@@ -78,22 +78,25 @@ func (h *ContributionHandler) GetContributions(c *gin.Context) {
 		fundID = &uuidVal
 	}
 
-	var contributorID *uuid.UUID
-	contributorIDStr := c.Query("contributorId")
-	if contributorIDStr != "" {
-		uuidVal, err := uuid.Parse(contributorIDStr)
+	if fundID != nil {
+		contributions, err := h.Service.GetContributionsByFund(*fundID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contributor ID"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
 			return
 		}
-		contributorID = &uuidVal
+		c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
+	} else {
+		contributorID := utils.GetCurrentUserID(c)
+		if contributorID == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Contributor ID required"})
+			return
+		}
+		contributions, err := h.Service.GetContributionsByContributor(*contributorID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
+			return
+		}
+		c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
 	}
 
-	contributions, err := h.Service.GetContributionsByFund(fundID, contributorID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
-		return
-	}
-
-	c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
 }
