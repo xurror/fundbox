@@ -8,7 +8,6 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage
 } from "@/components/ui/breadcrumb";
-import { getAccessToken } from "@auth0/nextjs-auth0";
 import { usePathname } from "next/navigation";
 import React, { JSX } from "react";
 

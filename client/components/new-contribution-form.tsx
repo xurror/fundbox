@@ -24,36 +24,45 @@ import {
 import { Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { getAccessToken } from "@auth0/nextjs-auth0"
 import React from "react"
+import { useParams } from "next/navigation"
 
 const FormSchema = z.object({
-	fundId: z.string().uuid(),
+	fundId: z.string().nonempty("Please pick a fund to contribute to.").uuid(),
 	amount: z.coerce.number().gt(0, {
 		message: 'Target amount must be at least 1.',
 	}),
 })
 
-export function NewContributionForm({ fundId }: { fundId: string }) {
+export function NewContributionForm() {
+	const { fundId } = useParams()
 	const [open, setOpen] = React.useState(false);
+	const [funds, setFunds] = React.useState<Record<string, string>[]>([])
+
+	React.useEffect(() => {
+		(async () => {
+			const res = await fetch('/api/funds', {
+				headers: { 'Content-Type': 'application/json' },
+			})
+			const data = await res.json()
+			setFunds(data)
+		})();
+	}, [])
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			fundId,
+			fundId: fundId as string,
 			amount: "" as unknown as number,
 		},
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
-		console.log(data)
 		const response = await fetch('/api/contributions', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${await getAccessToken()}`
-			},
+			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)
 		})
 		if (response.ok) {
@@ -69,7 +78,6 @@ export function NewContributionForm({ fundId }: { fundId: string }) {
 			})
 		}
 	}
-
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -89,7 +97,29 @@ export function NewContributionForm({ fundId }: { fundId: string }) {
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<div className="grid gap-4 py-4">
-							<Input {...form.register("fundId", { required: true })} type="hidden" />
+							<FormField
+								disabled={!!fundId}
+								control={form.control}
+								name="fundId"
+								render={({ field }) => (
+									<FormItem className="grid grid-cols-4 items-center gap-4">
+										<FormLabel className="text-right">Fund</FormLabel>
+										<Select disabled={!!fundId} onValueChange={field.onChange} defaultValue={field.value}>
+											<FormControl>
+												<SelectTrigger className="col-span-3">
+													<SelectValue placeholder="Select a fund to contribute to" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{funds.map(fund => (
+													<SelectItem key={fund.id} value={fund.id}>{fund.name}</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage className="col-span-3 col-start-2" />
+									</FormItem>
+								)}
+							/>
 
 							<FormField
 								control={form.control}
@@ -100,9 +130,6 @@ export function NewContributionForm({ fundId }: { fundId: string }) {
 										<FormControl>
 											<Input placeholder="1000" className="col-span-3" {...field} />
 										</FormControl>
-										{/* <FormDescription className="col-span-3 col-start-2">
-											This is your public display name.
-										</FormDescription> */}
 										<FormMessage className="col-span-3 col-start-2" />
 									</FormItem>
 								)}
