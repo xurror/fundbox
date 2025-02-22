@@ -4,7 +4,7 @@ import { auth0 } from "@/lib/auth0";
 
 export default async function Page() {
 
-  const res = await fetch(`http://localhost:8080/api/contributions`, {
+  const res = await fetch(`${process.env.BACKEND_URL}/api/contributions`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${(await auth0.getSession())?.tokenSet.accessToken}`

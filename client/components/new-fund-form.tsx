@@ -51,10 +51,7 @@ export function NewFundForm() {
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		const response = await fetch('/api/funds', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${await getAccessToken()}`
-			},
+			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(data)
 		})
 		if (response.ok) {
