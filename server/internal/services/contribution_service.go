@@ -27,8 +27,16 @@ func (s *ContributionService) MakeContribution(fundID uuid.UUID, contributorID *
 	return contribution, err
 }
 
-func (s *ContributionService) GetContributionsByFund(fundID, contributorID *uuid.UUID) ([]models.Contribution, error) {
-	contributions, err := s.repo.GetContributionsByFundOrContributor(fundID, contributorID)
+func (s *ContributionService) GetContributionsByFund(fundID uuid.UUID) ([]models.Contribution, error) {
+	contributions, err := s.repo.GetContributionsByFund(fundID)
+	if err != nil {
+		return nil, err
+	}
+	return contributions, nil
+}
+
+func (s *ContributionService) GetContributionsByContributor(contributorID uuid.UUID) ([]models.Contribution, error) {
+	contributions, err := s.repo.GetContributionsByContributor(contributorID)
 	if err != nil {
 		return nil, err
 	}

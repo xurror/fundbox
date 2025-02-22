@@ -2,7 +2,6 @@
 
 import React from "react"
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -31,18 +30,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { NewContributionForm } from "@/components/new-contribution-form"
+import { columns, Contribution } from "./columns"
 
-interface DataTableProps<TData, TValue> {
-  fundId: string
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+interface DataTableProps {
+  data: Contribution[]
 }
 
-export function DataTable<TData, TValue>({
-  fundId,
-  columns,
+export function ContributionsDataTable({
   data,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -78,7 +74,7 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-        <NewContributionForm fundId={fundId} />
+        <NewContributionForm />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-4">

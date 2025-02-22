@@ -1,44 +1,20 @@
-"use client"
+import { ContributionsDataTable } from "@/components/contributions/data-table";
+import { auth0 } from "@/lib/auth0";
 
-import React from "react"
-import { Contribution, columns } from "./columns"
-import { DataTable } from "./data-table"
-import { getAccessToken } from "@auth0/nextjs-auth0"
-
-export default function Page({
-  params,
-}: {
-  params: Promise<{ fundId: string }>
-}) {
-
-  const fundId = React.use(params).fundId
-  const [contributions, setContributions] = React.useState<Contribution[]>([])
-
-  React.useEffect(() => {
-    if (!fundId) {
-      return
-    }
-
-    (async () => {
-      const res = await fetch(`/api/contributions?fundId=${fundId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await getAccessToken()}`
-        },
-      })
-      const data = await res.json()
-      setContributions(data)
-    })();
-  }, [fundId])
-
-  if (!fundId) {
-    return <div>Loading...</div>
-  }
-
+export default async function Page({ params }: { params: Promise<{ fundId: string }> }) {
+  const fundId = (await params).fundId
+  console.log(fundId)
+  const res = await fetch(`http://localhost:8080/api/contributions?fundId=${fundId}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${(await auth0.getSession())?.tokenSet.accessToken}`
+    },
+  })
+  const contributions = await res.json()
 
   return (
     <div className="container mx-auto">
-      <DataTable fundId={fundId} columns={columns} data={contributions} />
+      <ContributionsDataTable data={contributions} />
     </div>
   )
 }
