@@ -49,15 +49,16 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 	{
 		funds := api.Group("/funds")
 		{
-			funds.POST("", r.FundHandler.CreateFund)
 			funds.GET("", r.FundHandler.GetFunds)
+			funds.POST("", r.FundHandler.CreateFund)
+			funds.GET("/:fundId", r.FundHandler.GetFund)
 			funds.GET("/contributed", r.FundHandler.GetContributedFunds)
 		}
 
 		contributions := api.Group("/contributions")
 		{
-			contributions.POST("", r.ContributionHandler.CreateContribution)
 			contributions.GET("", r.ContributionHandler.GetContributions)
+			contributions.POST("", r.ContributionHandler.CreateContribution)
 		}
 	}
 }

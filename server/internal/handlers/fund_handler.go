@@ -8,6 +8,7 @@ import (
 	"community-funds/pkg/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -78,6 +79,39 @@ func (h *FundHandler) GetFunds(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
+}
+
+// GetFunds retrieves all funds managed by the authenticated user
+// @Summary Get all funds managed by the authenticated user
+// @Description Returns a list of all funds where the authenticated user is the manager
+// @Tags funds
+// @Accept json
+// @Produce json
+// @Param fundId path string true "Fund ID"
+// @Success 200 dto.FundDTO
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Server error"
+// @Security BearerAuth
+// @Router /funds [get]
+func (h *FundHandler) GetFund(c *gin.Context) {
+	fundID, err := uuid.Parse(c.Param("fundId"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Fund not found"})
+		return
+	}
+
+	fund, err := h.Service.GetFund(fundID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
+		return
+	}
+
+	if fund == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Fund not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.MapFundToDTO(*fund))
 }
 
 // GetContributedFunds retrieves all funds a user has contributed to (excluding those they manage)

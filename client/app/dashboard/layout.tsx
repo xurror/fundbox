@@ -1,21 +1,14 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { NewFundForm } from "@/components/new-fund-form";
 import {
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbSeparator,
-	BreadcrumbPage
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
 	SidebarProvider,
 	SidebarInset,
 	SidebarTrigger
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { auth0 } from "@/lib/auth0"
 import { redirect } from "next/navigation"
+import Navcrumbs from "@/components/navcrumbs";
 
 export default async function Layout({
 	children,
@@ -38,19 +31,7 @@ export default async function Layout({
 							orientation="vertical"
 							className="mr-2 data-[orientation=vertical]:h-4"
 						/>
-						<Breadcrumb>
-							<BreadcrumbList>
-								<BreadcrumbItem className="hidden md:block">
-									<BreadcrumbLink href="#">
-										Building Your Application
-									</BreadcrumbLink>
-								</BreadcrumbItem>
-								<BreadcrumbSeparator className="hidden md:block" />
-								<BreadcrumbItem>
-									<BreadcrumbPage>Data Fetching</BreadcrumbPage>
-								</BreadcrumbItem>
-							</BreadcrumbList>
-						</Breadcrumb>
+						<Navcrumbs />
 					</div>
 					<div className="ml-auto px-3">
 						<NewFundForm />

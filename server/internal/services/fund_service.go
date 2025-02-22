@@ -28,6 +28,11 @@ func (s *FundService) CreateFund(name string, managerID uuid.UUID, targetAmount 
 }
 
 // GetFundsManagedByUser retrieves all funds managed by a user
+func (s *FundService) GetFund(fundID uuid.UUID) (*models.Fund, error) {
+	return s.fundRepo.GetFundByID(fundID)
+}
+
+// GetFundsManagedByUser retrieves all funds managed by a user
 func (s *FundService) GetFundsManagedByUser(userID *uuid.UUID) ([]models.Fund, error) {
 	return s.fundRepo.GetFundsByManager(userID)
 }
