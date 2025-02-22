@@ -53,18 +53,20 @@ function MenuContent({ item }: { item: Item }) {
   }[]>([])
 
   React.useEffect(() => {
-    async function fetchFunds() {
-      const token = await getAccessToken();
+    if (!item.path) {
+      return
+    }
+
+    (async () => {
       const res = await fetch(`/api${item.path}`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${await getAccessToken()}`
         },
       })
       const data = await res.json()
       setFunds(data)
-    }
-    fetchFunds()
+    })();
   }, [item.path])
 
   return (

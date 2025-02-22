@@ -11,32 +11,24 @@ export default function Page({
   params: Promise<{ fundId: string }>
 }) {
 
-  const [fundId, setFundId] = React.useState<string>("")
+  const fundId = React.use(params).fundId
   const [contributions, setContributions] = React.useState<Contribution[]>([])
 
   React.useEffect(() => {
-    async function fetchFundId() {
-      const fundId = (await params).fundId
-      setFundId(fundId)
+    if (!fundId) {
+      return
     }
-    fetchFundId()
-  }, [])
 
-  React.useEffect(() => {
-    async function fetchContributions() {
-      const token = await getAccessToken();
+    (async () => {
       const res = await fetch(`/api/contributions?fundId=${fundId}`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${await getAccessToken()}`
         },
       })
       const data = await res.json()
       setContributions(data)
-    }
-    if (fundId) {
-      fetchContributions()
-    }
+    })();
   }, [fundId])
 
   if (!fundId) {

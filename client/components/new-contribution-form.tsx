@@ -42,18 +42,17 @@ export function NewContributionForm({ fundId }: { fundId: string }) {
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
 			fundId,
-			amount: "" as any,
+			amount: "" as unknown as number,
 		},
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		console.log(data)
-		const token = await getAccessToken();
 		const response = await fetch('/api/contributions', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${token}`
+				'Authorization': `Bearer ${await getAccessToken()}`
 			},
 			body: JSON.stringify(data)
 		})
@@ -83,7 +82,7 @@ export function NewContributionForm({ fundId }: { fundId: string }) {
 				<DialogHeader>
 					<DialogTitle>Make a Contribution</DialogTitle>
 					<DialogDescription>
-						Let's make your contribution count.
+						Let&apos;s make your contribution count.
 					</DialogDescription>
 				</DialogHeader>
 
