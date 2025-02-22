@@ -14,10 +14,7 @@ import React, { JSX } from "react";
 
 async function fetchFund(fundId: string) {
   const res = await fetch(`/api/funds/${fundId}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${await getAccessToken()}`
-    },
+    headers: { 'Content-Type': 'application/json' },
   })
   return res.json()
 }
