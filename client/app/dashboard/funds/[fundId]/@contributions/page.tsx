@@ -3,7 +3,6 @@ import { auth0 } from "@/lib/auth0";
 
 export default async function Page({ params }: { params: Promise<{ fundId: string }> }) {
   const fundId = (await params).fundId
-  console.log(fundId)
   const res = await fetch(`${process.env.BACKEND_URL}/api/contributions?fundId=${fundId}`, {
     headers: {
       'Content-Type': 'application/json',

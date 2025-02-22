@@ -25,7 +25,6 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { getAccessToken } from "@auth0/nextjs-auth0"
 import React from "react"
 
 const FormSchema = z.object({
