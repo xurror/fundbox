@@ -44,17 +44,16 @@ export function NewFundForm() {
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
 			name: "",
-			targetAmount: "" as any,
+			targetAmount: "" as unknown as number,
 		},
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
-		const token = await getAccessToken();
 		const response = await fetch('/api/funds', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${token}`
+				'Authorization': `Bearer ${await getAccessToken()}`
 			},
 			body: JSON.stringify(data)
 		})
