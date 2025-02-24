@@ -31,8 +31,6 @@ func ProjectRoot() string {
 		}
 		dir = parent
 	}
-
-	log.Fatal("project root not found")
 	return ""
 }
 

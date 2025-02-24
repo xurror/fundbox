@@ -1,5 +1,26 @@
 basePath: /api
 definitions:
+  dto.ContributionDTO:
+    properties:
+      amount:
+        type: number
+      anonymous:
+        type: boolean
+      contributorId:
+        description: Null if anonymous
+        type: string
+      contributorName:
+        description: Null if anonymous
+        type: string
+      createdAt:
+        type: string
+      fundId:
+        type: string
+      fundName:
+        type: string
+      id:
+        type: string
+    type: object
   dto.FundDTO:
     properties:
       createdAt:
@@ -97,6 +118,37 @@ info:
   version: "1.0"
 paths:
   /contributions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all contributions made to a specific fund, including contributor
+        details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ContributionDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get contributions for a fund
+      tags:
+      - contributions
     post:
       consumes:
       - application/json
@@ -130,15 +182,19 @@ paths:
       - application/json
       description: Returns a list of all funds where the authenticated user is the
         manager
+      parameters:
+      - description: Fund ID
+        in: path
+        name: fundId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.FundDTO'
-            type: array
+            $ref: '#/definitions/dto.FundDTO'
         "401":
           description: Unauthorized
           schema:
@@ -184,4 +240,102 @@ paths:
       summary: Create a fund
       tags:
       - funds
+  /funds/contributed:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all funds a user has contributed to but does
+        not manage
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.FundDTO'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get funds contributed to
+      tags:
+      - funds
+  /health:
+    get:
+      description: Returns API health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - actuator
+  /ready:
+    get:
+      description: Returns readiness status based on database connectivity
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Readiness Probe
+      tags:
+      - actuator
+  /restart:
+    post:
+      description: Simulates an API restart
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Restart API
+      tags:
+      - actuator
+  /shutdown:
+    post:
+      description: Terminates the application gracefully
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Shutdown API
+      tags:
+      - actuator
 swagger: "2.0"

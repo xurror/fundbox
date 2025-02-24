@@ -3,10 +3,12 @@ services:
     type: web
     runtime: go
     repo: https://github.com/xurror/fundbox
-    branch: v2.0
+    branch: main
     region: frankfurt
     plan: free
     buildCommand: make build
+    startCommand: ./server/.build/community-funds
+    healthCheckPath: /actuator/health
     envVars:
       - key: DATABASE_DSN
         fromDatabase:

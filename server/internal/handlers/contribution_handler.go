@@ -13,11 +13,11 @@ import (
 
 // ContributionHandler handles contribution-related routes
 type ContributionHandler struct {
-	Service *services.ContributionService
+	service *services.ContributionService
 }
 
 func NewContributionHandler(s *services.ContributionService) *ContributionHandler {
-	return &ContributionHandler{Service: s}
+	return &ContributionHandler{service: s}
 }
 
 // CreateContribution handles contributions (Allows anonymous)
@@ -44,7 +44,7 @@ func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 	contributorID := utils.GetCurrentUserID(c)
 	anonymous := contributorID == nil
 
-	contribution, err := h.Service.MakeContribution(req.FundID, contributorID, req.Amount, anonymous)
+	contribution, err := h.service.MakeContribution(req.FundID, contributorID, req.Amount, anonymous)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to contribute"})
 		return
@@ -79,7 +79,7 @@ func (h *ContributionHandler) GetContributions(c *gin.Context) {
 	}
 
 	if fundID != nil {
-		contributions, err := h.Service.GetContributionsByFund(*fundID)
+		contributions, err := h.service.GetContributionsByFund(*fundID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
 			return
@@ -91,12 +91,11 @@ func (h *ContributionHandler) GetContributions(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Contributor ID required"})
 			return
 		}
-		contributions, err := h.Service.GetContributionsByContributor(*contributorID)
+		contributions, err := h.service.GetContributionsByContributor(*contributorID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
 			return
 		}
 		c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
 	}
-
 }

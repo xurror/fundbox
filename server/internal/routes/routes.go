@@ -16,26 +16,29 @@ import (
 )
 
 type Router struct {
-	Cfg                 *config.Config
-	Logger              *logrus.Logger
-	UserRepo            *repositories.UserRepository
-	FundHandler         *handlers.FundHandler
-	ContributionHandler *handlers.ContributionHandler
+	cfg                 *config.Config
+	logger              *logrus.Logger
+	actuatorHandler     *handlers.ActuatorHandler
+	userRepo            *repositories.UserRepository
+	fundHandler         *handlers.FundHandler
+	contributionHandler *handlers.ContributionHandler
 }
 
 func NewRouter(
 	cfg *config.Config,
 	logger *logrus.Logger,
-	userRepo *repositories.UserRepository,
-	fundHandler *handlers.FundHandler,
+	actuatorHandler *handlers.ActuatorHandler,
 	contributionHandler *handlers.ContributionHandler,
+	fundHandler *handlers.FundHandler,
+	userRepo *repositories.UserRepository,
 ) *Router {
 	return &Router{
-		Cfg:                 cfg,
-		Logger:              logger,
-		UserRepo:            userRepo,
-		FundHandler:         fundHandler,
-		ContributionHandler: contributionHandler,
+		cfg:                 cfg,
+		logger:              logger,
+		actuatorHandler:     actuatorHandler,
+		contributionHandler: contributionHandler,
+		fundHandler:         fundHandler,
+		userRepo:            userRepo,
 	}
 }
 
@@ -44,21 +47,30 @@ func (r *Router) SetupRoutes(router *gin.Engine) {
 	// Swagger documentation route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Actuator Endpoints
+	actuator := router.Group("/actuator")
+	{
+		actuator.GET("/health", r.actuatorHandler.HealthCheck)
+		actuator.GET("/ready", r.actuatorHandler.ReadinessCheck)
+		// actuator.POST("/shutdown", r.actuatorHandler.Shutdown)
+		// actuator.POST("/restart", r.actuatorHandler.Restart)
+	}
+
 	api := router.Group("/api")
-	api.Use(middlewares.AuthMiddleware(r.UserRepo, r.Cfg, r.Logger))
+	api.Use(middlewares.AuthMiddleware(r.userRepo, r.cfg, r.logger))
 	{
 		funds := api.Group("/funds")
 		{
-			funds.GET("", r.FundHandler.GetFunds)
-			funds.POST("", r.FundHandler.CreateFund)
-			funds.GET("/:fundId", r.FundHandler.GetFund)
-			funds.GET("/contributed", r.FundHandler.GetContributedFunds)
+			funds.GET("", r.fundHandler.GetFunds)
+			funds.POST("", r.fundHandler.CreateFund)
+			funds.GET("/:fundId", r.fundHandler.GetFund)
+			funds.GET("/contributed", r.fundHandler.GetContributedFunds)
 		}
 
 		contributions := api.Group("/contributions")
 		{
-			contributions.GET("", r.ContributionHandler.GetContributions)
-			contributions.POST("", r.ContributionHandler.CreateContribution)
+			contributions.GET("", r.contributionHandler.GetContributions)
+			contributions.POST("", r.contributionHandler.CreateContribution)
 		}
 	}
 }
