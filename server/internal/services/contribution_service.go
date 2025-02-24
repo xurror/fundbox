@@ -42,11 +42,3 @@ func (s *ContributionService) GetContributionsByContributor(contributorID uuid.U
 	}
 	return contributions, nil
 }
-
-// func (s *ContributionService) GetContributionsByUser(userID *uuid.UUID) ([]models.Contribution, error) {
-// 	contributions, err := s.repo.GetContributionsByUser(userID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return contributions, nil
-// }
