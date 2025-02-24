@@ -2,11 +2,10 @@ package utils
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -34,13 +33,10 @@ func ProjectRoot() string {
 	return ""
 }
 
-func GetCurrentUserID(c *gin.Context) *uuid.UUID {
-	id, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		c.Abort()
+func GetCurrentUserID(c *fiber.Ctx) *uuid.UUID {
+	id, ok := c.Context().UserValue("userID").(uuid.UUID)
+	if !ok {
 		return nil
 	}
-	uuidValue := id.(uuid.UUID)
-	return &uuidValue
+	return &id
 }

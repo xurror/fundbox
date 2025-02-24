@@ -6,14 +6,14 @@
 package main
 
 import (
-	"community-funds/internal/config"
-	"community-funds/internal/db"
-	"community-funds/internal/handlers"
-	"community-funds/internal/repositories"
-	"community-funds/internal/routes"
-	"community-funds/internal/server"
-	"community-funds/internal/services"
-	"community-funds/pkg/logger"
+	"community-funds/api/handlers"
+	"community-funds/api/routes"
+	"community-funds/api/server"
+	"community-funds/config"
+	"community-funds/logger"
+	"community-funds/pkg/db"
+	"community-funds/pkg/repositories"
+	"community-funds/pkg/services"
 
 	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
@@ -46,8 +46,8 @@ func main() {
 			handlers.NewFundHandler,
 		),
 		fx.Provide(
-			server.NewGinServer, // Initialize Gin server
-			routes.NewRouter,    // Register routes
+			routes.NewRouter, // Register routes
+			server.NewServer, // Initialize App server
 		),
 		fx.Invoke(server.StartServer), // Start server
 	)

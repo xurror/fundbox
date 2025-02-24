@@ -1,27 +1,24 @@
 package handlers
 
 import (
-	"net/http"
-
-	"community-funds/internal/dto"
-	"community-funds/internal/services"
+	"community-funds/api/dto"
+	"community-funds/pkg/services"
 	"community-funds/pkg/utils"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 )
 
 // FundHandler handles fund-related routes
 type FundHandler struct {
-	log     *logrus.Logger
+	// log     *logrus.Logger
 	service *services.FundService
 }
 
-func NewFundHandler(log *logrus.Logger, s *services.FundService) *FundHandler {
+func NewFundHandler(s *services.FundService) *FundHandler {
 	return &FundHandler{
 		service: s,
-		log:     log,
+		// log:     log,
 	}
 }
 
@@ -36,25 +33,27 @@ func NewFundHandler(log *logrus.Logger, s *services.FundService) *FundHandler {
 // @Failure 500 {object} map[string]string
 // @Security BearerAuth
 // @Router /funds [post]
-func (h *FundHandler) CreateFund(c *gin.Context) {
+func (h *FundHandler) CreateFund(c *fiber.Ctx) error {
 	var req struct {
 		Name         string  `json:"name" binding:"required"`
 		TargetAmount float64 `json:"targetAmount" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	managerID := utils.GetCurrentUserID(c)
-	fund, err := h.service.CreateFund(req.Name, *managerID, req.TargetAmount)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create fund"})
-		return
+	if managerID == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	c.JSON(http.StatusCreated, dto.MapFundToDTO(*fund))
+	fund, err := h.service.CreateFund(req.Name, *managerID, req.TargetAmount)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create fund"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(dto.MapFundToDTO(*fund))
 }
 
 // GetFunds retrieves all funds managed by the authenticated user
@@ -68,17 +67,18 @@ func (h *FundHandler) CreateFund(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Server error"
 // @Security BearerAuth
 // @Router /funds [get]
-func (h *FundHandler) GetFunds(c *gin.Context) {
+func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
 	managerID := utils.GetCurrentUserID(c)
+	if managerID == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
 	// Fetch funds managed by the user
 	funds, err := h.service.GetFundsManagedByUser(managerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch funds"})
 	}
-
-	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
+	return c.Status(fiber.StatusOK).JSON(dto.MapFundsToDTOs(funds))
 }
 
 // GetFunds retrieves all funds managed by the authenticated user
@@ -93,25 +93,21 @@ func (h *FundHandler) GetFunds(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Server error"
 // @Security BearerAuth
 // @Router /funds [get]
-func (h *FundHandler) GetFund(c *gin.Context) {
-	fundID, err := uuid.Parse(c.Param("fundId"))
+func (h *FundHandler) GetFund(c *fiber.Ctx) error {
+	fundID, err := uuid.Parse(c.Params("fundId"))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Fund not found"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Fund not found"})
 	}
 
 	fund, err := h.service.GetFund(fundID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch fund"})
 	}
 
 	if fund == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Fund not found"})
-		return
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Fund not found"})
 	}
-
-	c.JSON(http.StatusOK, dto.MapFundToDTO(*fund))
+	return c.Status(fiber.StatusOK).JSON(dto.MapFundToDTO(*fund))
 }
 
 // GetContributedFunds retrieves all funds a user has contributed to (excluding those they manage)
@@ -125,15 +121,17 @@ func (h *FundHandler) GetFund(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Server error"
 // @Security BearerAuth
 // @Router /funds/contributed [get]
-func (h *FundHandler) GetContributedFunds(c *gin.Context) {
+func (h *FundHandler) GetContributedFunds(c *fiber.Ctx) error {
 	userID := utils.GetCurrentUserID(c)
+	if userID == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
 	// Fetch funds contributed to (excluding managed funds)
 	funds, err := h.service.GetContributedFunds(*userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributed funds"})
-		return
+		return c.Status(fiber.StatusInternalServerError).
+			JSON(fiber.Map{"error": "Failed to fetch contributed funds"})
 	}
-
-	c.JSON(http.StatusOK, dto.MapFundsToDTOs(funds))
+	return c.Status(fiber.StatusOK).JSON(dto.MapFundsToDTOs(funds))
 }

@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"community-funds/internal/models"
+	"community-funds/pkg/models"
 
 	"github.com/google/uuid"
 )

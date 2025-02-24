@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"community-funds/internal/config"
+	"community-funds/config"
 	"os"
 	"strings"
 

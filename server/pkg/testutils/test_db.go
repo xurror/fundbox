@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	dbModule "community-funds/internal/db"
+	dbModule "community-funds/pkg/db"
 
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
