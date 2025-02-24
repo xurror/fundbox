@@ -3,7 +3,6 @@ package services
 import (
 	"community-funds/internal/models"
 	"community-funds/internal/repositories"
-	"errors"
 
 	"github.com/google/uuid"
 )
@@ -39,9 +38,5 @@ func (s *FundService) GetFundsManagedByUser(userID *uuid.UUID) ([]models.Fund, e
 
 // GetContributedFunds retrieves all funds a user has contributed to but does not manage
 func (s *FundService) GetContributedFunds(userID uuid.UUID) ([]models.Fund, error) {
-	funds, err := s.fundRepo.GetContributedFunds(userID)
-	if err != nil {
-		return nil, errors.New("failed to fetch contributed funds")
-	}
-	return funds, nil
+	return s.fundRepo.GetContributedFunds(userID)
 }
