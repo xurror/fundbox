@@ -41,6 +41,7 @@ func main() {
 			services.NewUserService,
 		),
 		fx.Provide(
+			handlers.NewActuatorHandler,
 			handlers.NewContributionHandler,
 			handlers.NewFundHandler,
 		),

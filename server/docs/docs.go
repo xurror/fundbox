@@ -16,6 +16,53 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/contributions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all contributions made to a specific fund, including contributor details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contributions"
+                ],
+                "summary": "Get contributions for a fund",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ContributionDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Anyone can contribute to a fund, authenticated users are tracked, anonymous users are allowed",
                 "consumes": [
@@ -74,14 +121,20 @@ const docTemplate = `{
                     "funds"
                 ],
                 "summary": "Get all funds managed by the authenticated user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Fund ID",
+                        "name": "fundId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.FundDTO"
-                            }
+                            "$ref": "#/definitions/dto.FundDTO"
                         }
                     },
                     "401": {
@@ -148,9 +201,190 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/funds/contributed": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a list of all funds a user has contributed to but does not manage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "funds"
+                ],
+                "summary": "Get funds contributed to",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.FundDTO"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns API health status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actuator"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ready": {
+            "get": {
+                "description": "Returns readiness status based on database connectivity",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actuator"
+                ],
+                "summary": "Readiness Probe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/restart": {
+            "post": {
+                "description": "Simulates an API restart",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actuator"
+                ],
+                "summary": "Restart API",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shutdown": {
+            "post": {
+                "description": "Terminates the application gracefully",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actuator"
+                ],
+                "summary": "Shutdown API",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.ContributionDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "anonymous": {
+                    "type": "boolean"
+                },
+                "contributorId": {
+                    "description": "Null if anonymous",
+                    "type": "string"
+                },
+                "contributorName": {
+                    "description": "Null if anonymous",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "fundId": {
+                    "type": "string"
+                },
+                "fundName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.FundDTO": {
             "type": "object",
             "properties": {

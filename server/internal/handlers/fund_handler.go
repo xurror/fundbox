@@ -14,14 +14,14 @@ import (
 
 // FundHandler handles fund-related routes
 type FundHandler struct {
-	Logger  *logrus.Logger
-	Service *services.FundService
+	log     *logrus.Logger
+	service *services.FundService
 }
 
 func NewFundHandler(log *logrus.Logger, s *services.FundService) *FundHandler {
 	return &FundHandler{
-		Service: s,
-		Logger:  log,
+		service: s,
+		log:     log,
 	}
 }
 
@@ -48,7 +48,7 @@ func (h *FundHandler) CreateFund(c *gin.Context) {
 	}
 
 	managerID := utils.GetCurrentUserID(c)
-	fund, err := h.Service.CreateFund(req.Name, *managerID, req.TargetAmount)
+	fund, err := h.service.CreateFund(req.Name, *managerID, req.TargetAmount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create fund"})
 		return
@@ -72,7 +72,7 @@ func (h *FundHandler) GetFunds(c *gin.Context) {
 	managerID := utils.GetCurrentUserID(c)
 
 	// Fetch funds managed by the user
-	funds, err := h.Service.GetFundsManagedByUser(managerID)
+	funds, err := h.service.GetFundsManagedByUser(managerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
 		return
@@ -88,7 +88,7 @@ func (h *FundHandler) GetFunds(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param fundId path string true "Fund ID"
-// @Success 200 dto.FundDTO
+// @Success 200 {object} dto.FundDTO
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Server error"
 // @Security BearerAuth
@@ -100,7 +100,7 @@ func (h *FundHandler) GetFund(c *gin.Context) {
 		return
 	}
 
-	fund, err := h.Service.GetFund(fundID)
+	fund, err := h.service.GetFund(fundID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch funds"})
 		return
@@ -129,7 +129,7 @@ func (h *FundHandler) GetContributedFunds(c *gin.Context) {
 	userID := utils.GetCurrentUserID(c)
 
 	// Fetch funds contributed to (excluding managed funds)
-	funds, err := h.Service.GetContributedFunds(*userID)
+	funds, err := h.service.GetContributedFunds(*userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributed funds"})
 		return

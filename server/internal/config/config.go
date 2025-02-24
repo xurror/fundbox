@@ -80,7 +80,7 @@ func NewConfig() *Config {
 	return &Config{
 		Port:        getStringEnv("PORT", "8080"),
 		LogLevel:    getUintEnv("LOG_LEVEL", 1),
-		DatabaseDSN: getStringEnv("DATABASE_DSN", "host=localhost user=postgres dbname=community_funds sslmode=disable"),
+		DatabaseDSN: getStringEnv("DATABASE_DSN", "postgres://psqluser:password@localhost:5432/community_funds?sslmode=disable"),
 		Auth0: Auth0Config{
 			Domain:   getStringEnv("AUTH0_DOMAIN", ""),
 			Audience: getStringEnv("AUTH0_AUDIENCE", ""),
