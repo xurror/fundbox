@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"net/http"
-
-	"community-funds/internal/dto"
-	"community-funds/internal/services"
+	"community-funds/api/dto"
+	"community-funds/pkg/services"
 	"community-funds/pkg/utils"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -30,15 +28,14 @@ func NewContributionHandler(s *services.ContributionService) *ContributionHandle
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /contributions [post]
-func (h *ContributionHandler) CreateContribution(c *gin.Context) {
+func (h *ContributionHandler) CreateContribution(c *fiber.Ctx) error {
 	var req struct {
 		FundID uuid.UUID `json:"fundId" binding:"required"`
 		Amount float64   `json:"amount" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	contributorID := utils.GetCurrentUserID(c)
@@ -46,11 +43,9 @@ func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 
 	contribution, err := h.service.MakeContribution(req.FundID, contributorID, req.Amount, anonymous)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to contribute"})
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to contribute"})
 	}
-
-	c.JSON(http.StatusCreated, dto.MapContributionToDTO(*contribution))
+	return c.Status(fiber.StatusCreated).JSON(dto.MapContributionToDTO(*contribution))
 }
 
 // GetContributions retrieves all contributions for a given fund or contributor or both
@@ -66,14 +61,13 @@ func (h *ContributionHandler) CreateContribution(c *gin.Context) {
 // @Failure 500 {object} map[string]string "Server Error"
 // @Security BearerAuth
 // @Router /contributions [get]
-func (h *ContributionHandler) GetContributions(c *gin.Context) {
+func (h *ContributionHandler) GetContributions(c *fiber.Ctx) error {
 	var fundID *uuid.UUID
 	fundIDStr := c.Query("fundId")
 	if fundIDStr != "" {
 		uuidVal, err := uuid.Parse(fundIDStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fund ID"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid fund ID"})
 		}
 		fundID = &uuidVal
 	}
@@ -81,21 +75,19 @@ func (h *ContributionHandler) GetContributions(c *gin.Context) {
 	if fundID != nil {
 		contributions, err := h.service.GetContributionsByFund(*fundID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
-			return
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
 		}
-		c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
+		return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
 	} else {
 		contributorID := utils.GetCurrentUserID(c)
 		if contributorID == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Contributor ID required"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing contributor ID"})
 		}
 		contributions, err := h.service.GetContributionsByContributor(*contributorID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch contributions"})
-			return
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
 		}
-		c.JSON(http.StatusOK, dto.MapContributionsToDTOs(contributions))
+
+		return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
 	}
 }

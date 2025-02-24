@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -29,8 +29,8 @@ func NewActuatorHandler(log *logrus.Logger, db *gorm.DB) *ActuatorHandler {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Router /health [get]
-func (h *ActuatorHandler) HealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "UP"})
+func (h *ActuatorHandler) HealthCheck(c *fiber.Ctx) error {
+	return c.Status(http.StatusOK).JSON(fiber.Map{"status": "UP"})
 }
 
 // Readiness Probe - Checks if dependencies (db) are healthy
@@ -41,14 +41,13 @@ func (h *ActuatorHandler) HealthCheck(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /ready [get]
-func (h *ActuatorHandler) ReadinessCheck(c *gin.Context) {
+func (h *ActuatorHandler) ReadinessCheck(c *fiber.Ctx) error {
 	sqlDB, err := h.db.DB()
 	if err != nil || sqlDB.Ping() != nil {
 		h.log.Warn("Readiness check failed: Database not available")
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "NOT READY", "error": "Database connection failed"})
-		return
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "NOT READY", "error": "Database connection failed"})
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "READY"})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"status": "READY"})
 }
 
 // Shutdown - Gracefully shuts down the API
@@ -58,14 +57,15 @@ func (h *ActuatorHandler) ReadinessCheck(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Router /shutdown [post]
-func (h *ActuatorHandler) Shutdown(c *gin.Context) {
+func (h *ActuatorHandler) Shutdown(c *fiber.Ctx) error {
 	h.log.Warn("Shutdown signal received, terminating service...")
-	c.JSON(http.StatusOK, gin.H{"status": "Shutting down..."})
 
 	go func() {
 		time.Sleep(1 * time.Second) // Allow time for the response to be sent
 		os.Exit(0)
 	}()
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"status": "Shutting down..."})
 }
 
 // Restart - Simulated restart by shutting down and relying on Render auto-restart
@@ -75,12 +75,13 @@ func (h *ActuatorHandler) Shutdown(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Router /restart [post]
-func (h *ActuatorHandler) Restart(c *gin.Context) {
+func (h *ActuatorHandler) Restart(c *fiber.Ctx) error {
 	h.log.Warn("Restart signal received, restarting service...")
-	c.JSON(http.StatusOK, gin.H{"status": "Restarting..."})
 
 	go func() {
 		time.Sleep(1 * time.Second)
 		os.Exit(1) // Exiting with a non-zero status prompts a restart in managed environments
 	}()
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"status": "Restarting..."})
 }

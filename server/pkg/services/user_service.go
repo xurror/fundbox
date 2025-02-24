@@ -1,8 +1,8 @@
 package services
 
 import (
-	"community-funds/internal/models"
-	"community-funds/internal/repositories"
+	"community-funds/pkg/models"
+	"community-funds/pkg/repositories"
 )
 
 type UserService struct {

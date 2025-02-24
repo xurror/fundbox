@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
 import { auth0 } from "./lib/auth0"
 
@@ -17,7 +17,11 @@ export async function middleware(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith("/api")) {
     const accessToken = await auth0.getAccessToken(request, authRes)
-    authRes.headers.set("Authorization", `Bearer ${accessToken.token}`)
+    return NextResponse.next({
+      headers: {
+        "Authorization": `Bearer ${accessToken.token}`
+      }
+    })
   }
 
   // the headers from the auth middleware should always be returned

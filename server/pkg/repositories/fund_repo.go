@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"community-funds/internal/models"
+	"community-funds/pkg/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

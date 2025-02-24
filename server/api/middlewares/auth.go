@@ -1,19 +1,19 @@
 package middlewares
 
 import (
+	"community-funds/config"
+	"community-funds/pkg/models"
+	"community-funds/pkg/repositories"
 	"context"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"community-funds/internal/config"
-	"community-funds/internal/models"
-	"community-funds/internal/repositories"
-
 	"github.com/auth0/go-jwt-middleware/v2/jwks"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,13 +31,11 @@ func (c AuthUserClaims) Validate(ctx context.Context) error {
 }
 
 // AuthMiddleware enforces authentication and maps Auth0 users to internal users
-func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, log *logrus.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, log *logrus.Logger) fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		issuerURL, err := url.Parse("https://" + cfg.Auth0.Domain + "/")
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Auth0 configuration"})
-			c.Abort()
-			return
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid Auth0 configuration"})
 		}
 
 		provider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
@@ -55,25 +53,19 @@ func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, l
 			validator.WithAllowedClockSkew(time.Minute),
 		)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Auth0 configuration"})
-			c.Abort()
-			return
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid Auth0 configuration"})
 		}
 
-		authHeader := c.GetHeader("Authorization")
+		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Missing Authorization header"})
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		token, err := v.ValidateToken(c.Request.Context(), tokenString)
+		token, err := v.ValidateToken(c.Context(), tokenString)
 		if err != nil {
 			log.Debugf("Failed to validate token: %v", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
 		}
 
 		var userClaims *AuthUserClaims
@@ -84,9 +76,7 @@ func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, l
 
 		if !claimsOk {
 			log.Debug("Failed to extract claims")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
 		}
 
 		auth0ID := claims.RegisteredClaims.Subject // Extract Auth0 User ID (`sub` claim)
@@ -94,7 +84,6 @@ func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, l
 		// Find or Create Internal User
 		user, err := userRepo.GetUserByAuth0ID(auth0ID)
 		if err != nil {
-
 			user = &models.User{
 				Auth0ID: auth0ID,
 				Name:    userClaims.Name,
@@ -103,15 +92,13 @@ func AuthMiddleware(userRepo *repositories.UserRepository, cfg *config.Config, l
 
 			if err := userRepo.CreateUser(user); err != nil {
 				log.Debugf("Failed to create internal user: %v", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create internal user"})
-				c.Abort()
-				return
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create internal user"})
 			}
 		}
 
 		// Store user ID in context for handlers
-		c.Set("user_id", user.ID)
+		c.Context().SetUserValue("userID", user.ID)
 
-		c.Next()
+		return c.Next()
 	}
 }

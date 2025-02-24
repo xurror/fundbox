@@ -26,6 +26,10 @@ export default async function Page() {
   })
   const contributions = await res.json()
 
+  if (!contributions) {
+    return <div>Loading...</div>
+  }
+
   return (
     <div className="flex-col md:flex">
       <div className="border-b">

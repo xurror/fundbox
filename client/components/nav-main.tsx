@@ -18,14 +18,22 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import React from "react"
-import { getAccessToken } from "@auth0/nextjs-auth0"
 import Link from "next/link"
+import { useQuery } from "@tanstack/react-query"
 
 type Item = {
   title: string
   path: string
   icon?: LucideIcon
   isActive?: boolean
+}
+
+type Fund = {
+  id: string
+  name: string
+  targetAmount: number
+  createdAt: string
+  updatedAt: string
 }
 
 export function NavMain({
@@ -45,29 +53,22 @@ export function NavMain({
   )
 }
 
-function MenuContent({ item }: { item: Item }) {
-  const [funds, setFunds] = React.useState<{
-    id: string
-    name: string
-    targetAmount: number
-  }[]>([])
-
-  React.useEffect(() => {
-    if (!item.path) {
-      return
-    }
-
-    (async () => {
-      const res = await fetch(`/api${item.path}`, {
+function useFunds(path: string) {
+  return useQuery({
+    queryKey: ['funds'],
+    queryFn: async (): Promise<Array<Fund>> => {
+      const response = await fetch(`/api${path}`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await getAccessToken()}`
         },
       })
-      const data = await res.json()
-      setFunds(data)
-    })();
-  }, [item.path])
+      return await response.json()
+    },
+  })
+}
+
+function MenuContent({ item }: { item: Item }) {
+  const { data } = useFunds(item.path)
 
   return (
     <Collapsible
@@ -85,7 +86,7 @@ function MenuContent({ item }: { item: Item }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
-            {funds?.map((subItem) => (
+            {data && data.length > 0 && data?.map((subItem) => (
               <SidebarMenuSubItem key={subItem.name}>
                 <SidebarMenuSubButton asChild>
                   <Link href={`/dashboard/funds/${subItem.id}`}>

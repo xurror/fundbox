@@ -1,9 +1,9 @@
 package services
 
 import (
-	"community-funds/internal/models"
-	"community-funds/internal/repositories"
-	"community-funds/internal/testutils"
+	"community-funds/pkg/models"
+	"community-funds/pkg/repositories"
+	"community-funds/pkg/testutils"
 	"strconv"
 	"testing"
 
