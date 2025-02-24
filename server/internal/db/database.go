@@ -25,19 +25,20 @@ func NewDatabase(cfg *config.Config, log *logrus.Logger) *gorm.DB {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	runMigrations(db, log)
+	err = RunMigrations(db)
+	if err != nil {
+		log.Panicf("Failed to migrate database: %v", err)
+	}
 
 	return db
 }
 
-func runMigrations(db *gorm.DB, log *logrus.Logger) {
+func RunMigrations(db *gorm.DB) error {
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.Contribution{},
 		&models.Fund{},
 	)
 
-	if err != nil {
-		log.Panicf("Failed to migrate database: %v", err)
-	}
+	return err
 }
