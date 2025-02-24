@@ -25,8 +25,6 @@ func createTestUser(t *testing.T, testDB *testutils.TestDatabase, number int) mo
 
 func TestCreateFund(t *testing.T) {
 	testDB := testutils.SetupTestDB(t)
-	defer testutils.CleanupTestDB(t, testDB)
-
 	fundRepo := repositories.NewFundRepository(testDB.DB)
 	fundService := NewFundService(fundRepo)
 
@@ -48,7 +46,6 @@ func TestCreateFund(t *testing.T) {
 
 func TestGetFund(t *testing.T) {
 	testDB := testutils.SetupTestDB(t)
-	defer testutils.CleanupTestDB(t, testDB)
 
 	fundRepo := repositories.NewFundRepository(testDB.DB)
 	fundService := NewFundService(fundRepo)
@@ -71,7 +68,6 @@ func TestGetFund(t *testing.T) {
 
 func TestGetFundsManagedByUser(t *testing.T) {
 	testDB := testutils.SetupTestDB(t)
-	defer testutils.CleanupTestDB(t, testDB)
 
 	fundRepo := repositories.NewFundRepository(testDB.DB)
 	fundService := NewFundService(fundRepo)
@@ -118,7 +114,6 @@ func TestGetFundsManagedByUser(t *testing.T) {
 
 func TestGetContributedFunds(t *testing.T) {
 	testDB := testutils.SetupTestDB(t)
-	defer testutils.CleanupTestDB(t, testDB)
 
 	fundRepo := repositories.NewFundRepository(testDB.DB)
 	fundService := NewFundService(fundRepo)
