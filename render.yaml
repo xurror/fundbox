@@ -1,17 +1,16 @@
 services:
   - name: community-funds
     type: web
-    runtime: go
+    runtime: docker
     repo: https://github.com/xurror/fundbox
     branch: main
     region: frankfurt
     plan: free
-    buildCommand: make build
-    startCommand: ./server/.build/community-funds
+    rootDir: ./server
     healthCheckPath: /actuator/health
     envVars:
       - key: DATABASE_DSN
         fromDatabase:
-          name: fundbox
+          name: community-funds-db
           property: connectionString
       - fromGroup: community-funds

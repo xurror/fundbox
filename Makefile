@@ -1,11 +1,10 @@
 # Define variables
 APP_NAME = community-funds
-DOCKER_IMAGE = your-dockerhub-username/$(APP_NAME)
+DOCKER_IMAGE = $(APP_NAME)
 DOCKER_TAG = latest
 SERVER_BINARY = $(APP_NAME)
 SERVER_DIR = server
 BUILD_DIR = .build
-DEPLOY_PLATFORM = render # Change to 'render' if deploying to Render
 
 # Load environment variables from .env
 ifneq (,$(wildcard $(SERVER_DIR)/.env))
@@ -58,16 +57,3 @@ docker-build:
 .PHONY: docker-run
 docker-run:
 	docker run -p 8080:8080 --env-file $(SERVER_DIR)/.env $(DOCKER_IMAGE):$(DOCKER_TAG)
-
-# Deploy to cloud provider
-.PHONY: deploy
-deploy:
-ifeq ($(DEPLOY_PLATFORM), koyeb)
-	@echo "Deploying to Koyeb..."
-	koyeb service deploy --name $(APP_NAME) --docker $(DOCKER_IMAGE):$(DOCKER_TAG)
-else ifeq ($(DEPLOY_PLATFORM), render)
-	@echo "Deploying to Render..."
-	git push render main
-else
-	@echo "❌ Unknown deployment platform: $(DEPLOY_PLATFORM)"
-endif
