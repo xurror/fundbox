@@ -1,0 +1,15 @@
+services:
+  - name: community-funds
+    type: web
+    runtime: go
+    repo: https://github.com/xurror/fundbox
+    branch: v2.0
+    region: frankfurt
+    plan: free
+    buildCommand: make build
+    envVars:
+      - key: DATABASE_DSN
+        fromDatabase:
+          name: fundbox
+          property: connectionString
+      - fromGroup: community-funds
