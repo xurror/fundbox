@@ -30,15 +30,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { NewContributionForm } from "@/components/new-contribution-form"
-import { columns, Contribution } from "./columns"
+import { ColumnDef } from "@tanstack/react-table"
 
-interface DataTableProps {
-  data: Contribution[]
+interface DataTableProps<TData> {
+  data: Array<TData>,
+  columns: Array<ColumnDef<TData>>,
 }
 
-export function ContributionsDataTable({
+export function ContributionsDataTable<TData>({
   data,
-}: DataTableProps) {
+  columns,
+}: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})

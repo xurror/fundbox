@@ -1,6 +1,6 @@
 "use client"
 
-import { DataTableColumnHeader } from "./data-table-column-header"
+import { DataTableColumnHeader } from "@/components/contributions/data-table-column-header"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -11,16 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu"
+import { Contribution } from "@/types/contribution"
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-
-export type Contribution = {
-  id: string
-  fundName: string
-  contributorName: string
-  amount: number
-  createdAt: string
-}
 
 export const columns: ColumnDef<Contribution>[] = [
   {

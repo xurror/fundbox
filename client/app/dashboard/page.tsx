@@ -3,14 +3,12 @@ import { Metadata } from "next"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Overview } from "./_components/overview"
+import { ContributionsOverview } from "./_components/contributions-overview"
 import { RecentContributions } from "./_components/recent-contributions"
 import { NewFundForm } from "@/components/new-fund-form"
-import { auth0 } from "@/lib/auth0"
 import { NewContributionForm } from "@/components/new-contribution-form"
 
 export const metadata: Metadata = {
@@ -18,18 +16,6 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const res = await fetch(`${process.env.BACKEND_URL}/api/contributions`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await auth0.getSession())?.tokenSet.accessToken}`
-    },
-  })
-  const contributions = await res.json()
-
-  if (!contributions) {
-    return <div>Loading...</div>
-  }
-
   return (
     <div className="flex-col md:flex">
       <div className="border-b">
@@ -156,25 +142,8 @@ export default async function Page() {
             </Card>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Overview</CardTitle>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <Overview data={contributions} />
-              </CardContent>
-            </Card>
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>
-                  You made {(contributions as []).length} sales this month.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RecentContributions data={contributions} />
-              </CardContent>
-            </Card>
+            <ContributionsOverview />
+            <RecentContributions />
           </div>
         </div>
       </div>
