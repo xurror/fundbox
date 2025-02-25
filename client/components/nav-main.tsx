@@ -19,21 +19,15 @@ import {
 } from "@/components/ui/sidebar"
 import React from "react"
 import Link from "next/link"
-import { useQuery } from "@tanstack/react-query"
+import { Fund } from "@/types/fund"
+import useSWR from "swr"
+import { fetcher } from "@/lib/api"
 
 type Item = {
   title: string
   path: string
   icon?: LucideIcon
   isActive?: boolean
-}
-
-type Fund = {
-  id: string
-  name: string
-  targetAmount: number
-  createdAt: string
-  updatedAt: string
 }
 
 export function NavMain({
@@ -53,22 +47,8 @@ export function NavMain({
   )
 }
 
-function useFunds(path: string) {
-  return useQuery({
-    queryKey: ['funds'],
-    queryFn: async (): Promise<Array<Fund>> => {
-      const response = await fetch(`/api${path}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      return await response.json()
-    },
-  })
-}
-
 function MenuContent({ item }: { item: Item }) {
-  const { data } = useFunds(item.path)
+  const { data } = useSWR<Array<Fund>>(`/api${item.path}`, fetcher)
 
   return (
     <Collapsible

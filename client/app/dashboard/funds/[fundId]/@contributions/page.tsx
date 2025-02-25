@@ -1,19 +1,17 @@
-import { ContributionsDataTable } from "@/components/contributions/data-table";
-import { auth0 } from "@/lib/auth0";
+"use client"
 
-export default async function Page({ params }: { params: Promise<{ fundId: string }> }) {
-  const fundId = (await params).fundId
-  const res = await fetch(`${process.env.BACKEND_URL}/api/contributions?fundId=${fundId}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await auth0.getSession())?.tokenSet.accessToken}`
-    },
-  })
-  const contributions = await res.json()
+import { ContributionsDataTable } from "@/components/contributions/data-table";
+import React from "react";
+import { useContributions } from "@/hooks/use-contributions";
+import { columns } from "./columns";
+
+export default function Page({ params }: { params: Promise<{ fundId: string }> }) {
+  const fundId = React.use(params).fundId
+  const { data } = useContributions(fundId)
 
   return (
     <div className="container mx-auto">
-      <ContributionsDataTable data={contributions} />
+      {data && <ContributionsDataTable data={data} columns={columns} />}
     </div>
   )
 }
