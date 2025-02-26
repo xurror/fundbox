@@ -4,7 +4,6 @@ import (
 	"community-funds/api/routes"
 	"community-funds/config"
 	"context"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -34,14 +33,7 @@ func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server
 	// Middleware
 	app.Use(recover.New())
 	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000,https://yourfrontend.com", // Allowed origins
-		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
-		AllowHeaders:     "Origin,Content-Type,Authorization",
-		ExposeHeaders:    "Content-Length",
-		AllowCredentials: true,
-		MaxAge:           int((12 * time.Hour).Seconds()),
-	}))
+	app.Use(cors.New(cfg.Cors.ToServerCors()))
 
 	// app.Use(swagger.New(swagger.Config{
 	// 	BasePath: "/swagger", // swagger ui base path

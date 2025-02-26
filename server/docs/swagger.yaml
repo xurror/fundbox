@@ -34,6 +34,11 @@ definitions:
       updatedAt:
         type: string
     type: object
+  dto.UserDTO:
+    properties:
+      id:
+        type: string
+    type: object
   models.Contribution:
     properties:
       amount:
@@ -240,38 +245,6 @@ paths:
       summary: Create a fund
       tags:
       - funds
-  /funds/contributed:
-    get:
-      consumes:
-      - application/json
-      description: Returns a list of all funds a user has contributed to but does
-        not manage
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dto.FundDTO'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Server error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Get funds contributed to
-      tags:
-      - funds
   /health:
     get:
       description: Returns API health status
@@ -338,4 +311,33 @@ paths:
       summary: Shutdown API
       tags:
       - actuator
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the current authenticated user id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current authenticated user
+      tags:
+      - users
 swagger: "2.0"

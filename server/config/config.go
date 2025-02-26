@@ -6,65 +6,33 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Port        string
-	DatabaseDSN string // see: https://gorm.io/docs/connecting_to_the_database.html#PostgreSQL
-	LogLevel    uint64
-	Auth0       Auth0Config
+	AllowOrigins string
+	Port         string
+	DatabaseDSN  string
+	LogLevel     uint64
+	Auth0        *Auth0Config
+	Cors         *CorsConfig
+}
+
+type CorsConfig struct {
+	AllowOrigins     string
+	AllowMethods     string
+	AllowHeaders     string
+	ExposeHeaders    string
+	AllowCredentials bool
+	MaxAge           int
 }
 
 type Auth0Config struct {
 	Domain   string
 	Audience string
-}
-
-func envFilePath(filename string) string {
-	envPath := filepath.Join(utils.ProjectRoot(), filename)
-	return envPath
-}
-
-// Helper to read an env var or use default.
-func getStringEnv(key, def string) string {
-	if val, ok := os.LookupEnv(key); ok {
-		return val
-	}
-	return def
-}
-
-// Helper to read an env var or use default.
-func getIntEnv(key string, def int64) int64 {
-	parseInt := func(s string) int64 {
-		if number, ok := strconv.ParseInt(s, 10, 64); ok == nil {
-			return number
-		}
-		log.Panicf("Error parsing %s as int", s)
-		return 0
-	}
-
-	if val, ok := os.LookupEnv(key); ok {
-		return parseInt(val)
-	}
-	return def
-}
-
-// Helper to read an env var or use default.
-func getUintEnv(key string, def uint64) uint64 {
-	parseUint := func(s string) uint64 {
-		if number, ok := strconv.ParseUint(s, 10, 64); ok == nil {
-			return number
-		}
-		log.Panicf("Error parsing %s as uint", s)
-		return 0
-	}
-
-	if val, ok := os.LookupEnv(key); ok {
-		return parseUint(val)
-	}
-	return def
 }
 
 func NewConfig() *Config {
@@ -81,9 +49,83 @@ func NewConfig() *Config {
 		Port:        getStringEnv("PORT", "8080"),
 		LogLevel:    getUintEnv("LOG_LEVEL", 1),
 		DatabaseDSN: getStringEnv("DATABASE_DSN", "postgres://psqluser:password@localhost:5432/community_funds?sslmode=disable"),
-		Auth0: Auth0Config{
+		Auth0: &Auth0Config{
 			Domain:   getStringEnv("AUTH0_DOMAIN", ""),
 			Audience: getStringEnv("AUTH0_AUDIENCE", ""),
 		},
+		Cors: &CorsConfig{
+			AllowOrigins:     getStringEnv("CORS_ALLOW_ORIGINS", "http://localhost:3000"),
+			AllowMethods:     getStringEnv("CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,OPTIONS"),
+			AllowHeaders:     getStringEnv("CORS_ALLOW_HEADERS", "Origin,Content-Type,Authorization"),
+			ExposeHeaders:    getStringEnv("CORS_EXPOSE_HEADERS", "Content-Length"),
+			AllowCredentials: getBoolEnv("CORS_ALLOW_CREDENTIALS", true),
+			MaxAge:           getIntEnv("CORS_ALLOW_ORIGINS", int((12 * time.Hour).Seconds())),
+		},
 	}
+}
+
+func (c *CorsConfig) ToServerCors() cors.Config {
+	return cors.Config{
+		AllowOrigins:     c.AllowOrigins,
+		AllowMethods:     c.AllowMethods,
+		AllowHeaders:     c.AllowHeaders,
+		ExposeHeaders:    c.ExposeHeaders,
+		AllowCredentials: c.AllowCredentials,
+		MaxAge:           c.MaxAge,
+	}
+}
+
+func envFilePath(filename string) string {
+	envPath := filepath.Join(utils.ProjectRoot(), filename)
+	return envPath
+}
+
+func getStringEnv(key, def string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return def
+}
+
+func getBoolEnv(key string, def bool) bool {
+	parseBool := func(s string) bool {
+		if val, ok := strconv.ParseBool(s); ok == nil {
+			return val
+		} else {
+			return def
+		}
+	}
+
+	if val, ok := os.LookupEnv(key); ok {
+		return parseBool(val)
+	}
+	return def
+}
+
+func getIntEnv(key string, def int) int {
+	parseInt := func(s string) int {
+		if number, ok := strconv.ParseInt(s, 10, 64); ok == nil {
+			return int(number)
+		}
+		return def
+	}
+
+	if val, ok := os.LookupEnv(key); ok {
+		return parseInt(val)
+	}
+	return def
+}
+
+func getUintEnv(key string, def uint64) uint64 {
+	parseUint := func(s string) uint64 {
+		if number, ok := strconv.ParseUint(s, 10, 64); ok == nil {
+			return number
+		}
+		return def
+	}
+
+	if val, ok := os.LookupEnv(key); ok {
+		return parseUint(val)
+	}
+	return def
 }
