@@ -27,18 +27,14 @@ func (r *FundRepository) GetFundByID(id uuid.UUID) (*models.Fund, error) {
 	return &fund, err
 }
 
-// GetFundsByManager retrieves all funds managed by a specific user
-func (r *FundRepository) GetFundsByManager(managerID *uuid.UUID) ([]models.Fund, error) {
+func (r *FundRepository) GetFundsByManagerID(managerID *uuid.UUID) ([]models.Fund, error) {
 	var funds []models.Fund
 	err := r.db.Where("manager_id = ?", managerID).Find(&funds).Error
 	return funds, err
 }
 
-// GetContributedFunds retrieves all funds a user has contributed to (excluding funds they manage)
-func (r *FundRepository) GetContributedFunds(userID uuid.UUID) ([]models.Fund, error) {
+func (r *FundRepository) GetFundsByContributorID(contributorID uuid.UUID) ([]models.Fund, error) {
 	var funds []models.Fund
-	err := r.db.
-		Joins("Contributions", r.db.Where(&models.User{ID: userID})).
-		Find(&funds).Error
+	err := r.db.Raw("SELECT * FROM funds LEFT JOIN contributions ON funds.id = contributions.fund_id WHERE contributions.contributor_id = ?", contributorID).Scan(&funds).Error
 	return funds, err
 }
