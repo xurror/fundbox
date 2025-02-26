@@ -7,8 +7,6 @@ import (
 	"community-funds/api/handlers"
 	"community-funds/api/middlewares"
 	"community-funds/config"
-
-	// _ "community-funds/docs" // Import Swagger docs
 	"community-funds/pkg/repositories"
 )
 
@@ -18,6 +16,7 @@ type Router struct {
 	actuatorHandler     *handlers.ActuatorHandler
 	userRepo            *repositories.UserRepository
 	fundHandler         *handlers.FundHandler
+	userHandler         *handlers.UserHandler
 	contributionHandler *handlers.ContributionHandler
 }
 
@@ -27,6 +26,7 @@ func NewRouter(
 	actuatorHandler *handlers.ActuatorHandler,
 	contributionHandler *handlers.ContributionHandler,
 	fundHandler *handlers.FundHandler,
+	userHandler *handlers.UserHandler,
 	userRepo *repositories.UserRepository,
 ) *Router {
 	return &Router{
@@ -35,6 +35,7 @@ func NewRouter(
 		actuatorHandler:     actuatorHandler,
 		contributionHandler: contributionHandler,
 		fundHandler:         fundHandler,
+		userHandler:         userHandler,
 		userRepo:            userRepo,
 	}
 }
@@ -57,13 +58,17 @@ func (r *Router) SetupRoutes(router *fiber.App) {
 			funds.Get("", r.fundHandler.GetFunds)
 			funds.Post("", r.fundHandler.CreateFund)
 			funds.Get("/:fundId", r.fundHandler.GetFund)
-			funds.Get("/contributed", r.fundHandler.GetContributedFunds)
 		}
 
 		contributions := api.Group("/contributions")
 		{
 			contributions.Get("", r.contributionHandler.GetContributions)
 			contributions.Post("", r.contributionHandler.CreateContribution)
+		}
+
+		users := api.Group("/users")
+		{
+			users.Get("me", r.userHandler.GetCurrentUser)
 		}
 	}
 }

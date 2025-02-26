@@ -7,7 +7,7 @@ import { columns } from "./columns";
 
 export default function Page({ params }: { params: Promise<{ fundId: string }> }) {
   const fundId = React.use(params).fundId
-  const { data } = useContributions(fundId)
+  const { data } = useContributions({ fundId })
 
   return (
     <div className="container mx-auto">

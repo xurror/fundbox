@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ContributionDTO represents a structured response for contributions
 type ContributionDTO struct {
 	ID              uuid.UUID  `json:"id"`
 	FundID          uuid.UUID  `json:"fundId"`
@@ -20,7 +19,6 @@ type ContributionDTO struct {
 	CreatedAt       time.Time  `json:"createdAt"`
 }
 
-// MapContributionToDTO converts a Contribution model into a ContributionDTO
 func MapContributionToDTO(contribution models.Contribution) ContributionDTO {
 	return ContributionDTO{
 		ID:              contribution.ID,
@@ -34,7 +32,6 @@ func MapContributionToDTO(contribution models.Contribution) ContributionDTO {
 	}
 }
 
-// MapContributionsToDTOs converts a slice of Contribution models into DTOs
 func MapContributionsToDTOs(contributions []models.Contribution) []ContributionDTO {
 	dtos := make([]ContributionDTO, len(contributions))
 	for i, c := range contributions {

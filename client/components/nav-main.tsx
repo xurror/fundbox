@@ -19,13 +19,12 @@ import {
 } from "@/components/ui/sidebar"
 import React from "react"
 import Link from "next/link"
-import { Fund } from "@/types/fund"
-import useSWR from "swr"
-import { fetcher } from "@/lib/api"
+import { useFunds } from "@/hooks/use-funds"
 
 type Item = {
   title: string
-  path: string
+  path?: string
+  params?: {[key: string]: string}
   icon?: LucideIcon
   isActive?: boolean
 }
@@ -48,8 +47,7 @@ export function NavMain({
 }
 
 function MenuContent({ item }: { item: Item }) {
-  const { data } = useSWR<Array<Fund>>(`/api${item.path}`, fetcher)
-
+  const { data } = useFunds(item.params as typeof useFunds.arguments)
   return (
     <Collapsible
       asChild

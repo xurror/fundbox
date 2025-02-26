@@ -54,8 +54,8 @@ func (h *ContributionHandler) CreateContribution(c *fiber.Ctx) error {
 // @Tags contributions
 // @Accept json
 // @Produce json
-// @Query fundId path string true "Fund ID"
-// @Query contributorId path string true "Fund ID"
+// @Query fundId path string false "Fund ID"
+// @Query contributorId path string false "Contributor ID"
 // @Success 200 {array} dto.ContributionDTO
 // @Failure 400 {object} map[string]string "Bad Request"
 // @Failure 500 {object} map[string]string "Server Error"

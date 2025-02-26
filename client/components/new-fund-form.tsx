@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import React from "react"
+import { useFunds } from "@/hooks/use-funds"
 
 const FormSchema = z.object({
 	name: z.string().min(2, {
@@ -37,8 +38,10 @@ const FormSchema = z.object({
 })
 
 export function NewFundForm() {
+	const { mutate } = useFunds()
+
 	const [open, setOpen] = React.useState(false);
-	
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
@@ -48,25 +51,18 @@ export function NewFundForm() {
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
-		const response = await fetch('/api/funds', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(data)
-		})
-		if (response.ok) {
-			const fund = await response.json()
+		mutate(JSON.stringify(data)).then((fund) => {
 			toast.success("Successfully created fund", {
 				description: `You've successfully created fund: ${fund.name}`,
 			})
 			form.reset()
 			setOpen(false)
-		} else {
+		}).catch(() => {
 			toast.error("Failed to create fund", {
 				description: "An error occurred while creating the fund.",
 			})
-		}
+		})
 	}
-
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>

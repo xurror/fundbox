@@ -11,14 +11,12 @@ import (
 
 // FundHandler handles fund-related routes
 type FundHandler struct {
-	// log     *logrus.Logger
 	service *services.FundService
 }
 
 func NewFundHandler(s *services.FundService) *FundHandler {
 	return &FundHandler{
 		service: s,
-		// log:     log,
 	}
 }
 
@@ -62,12 +60,33 @@ func (h *FundHandler) CreateFund(c *fiber.Ctx) error {
 // @Tags funds
 // @Accept json
 // @Produce json
+// @Query contributorId path string false "Contributor ID"
 // @Success 200 {array} dto.FundDTO
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Server error"
 // @Security BearerAuth
 // @Router /funds [get]
 func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
+	var contributorID *uuid.UUID
+	contributorIDStr := c.Query("contributorId")
+	if contributorIDStr != "" {
+		uuidVal, err := uuid.Parse(contributorIDStr)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid contributor ID"})
+		}
+		contributorID = &uuidVal
+	}
+
+	if contributorID != nil {
+		// Fetch funds contributed to (excluding managed funds)
+		funds, err := h.service.GetContributedFunds(*contributorID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).
+				JSON(fiber.Map{"error": "Failed to fetch contributed funds"})
+		}
+		return c.Status(fiber.StatusOK).JSON(dto.MapFundsToDTOs(funds))
+	}
+
 	managerID := utils.GetCurrentUserID(c)
 	if managerID == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
@@ -108,30 +127,4 @@ func (h *FundHandler) GetFund(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Fund not found"})
 	}
 	return c.Status(fiber.StatusOK).JSON(dto.MapFundToDTO(*fund))
-}
-
-// GetContributedFunds retrieves all funds a user has contributed to (excluding those they manage)
-// @Summary Get funds contributed to
-// @Description Returns a list of all funds a user has contributed to but does not manage
-// @Tags funds
-// @Accept json
-// @Produce json
-// @Success 200 {array} dto.FundDTO
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Server error"
-// @Security BearerAuth
-// @Router /funds/contributed [get]
-func (h *FundHandler) GetContributedFunds(c *fiber.Ctx) error {
-	userID := utils.GetCurrentUserID(c)
-	if userID == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-
-	// Fetch funds contributed to (excluding managed funds)
-	funds, err := h.service.GetContributedFunds(*userID)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).
-			JSON(fiber.Map{"error": "Failed to fetch contributed funds"})
-	}
-	return c.Status(fiber.StatusOK).JSON(dto.MapFundsToDTOs(funds))
 }

@@ -28,6 +28,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import React from "react"
 import { useParams } from "next/navigation"
+import { useFunds } from "@/hooks/use-funds"
+import { useContributions } from "@/hooks/use-contributions"
+
 
 const FormSchema = z.object({
 	fundId: z.string().nonempty("Please pick a fund to contribute to.").uuid(),
@@ -38,18 +41,10 @@ const FormSchema = z.object({
 
 export function NewContributionForm() {
 	const { fundId } = useParams()
-	const [open, setOpen] = React.useState(false);
-	const [funds, setFunds] = React.useState<Record<string, string>[]>([])
+	const { data: funds } = useFunds()
+	const { mutate } = useContributions()
 
-	React.useEffect(() => {
-		(async () => {
-			const res = await fetch('/api/funds', {
-				headers: { 'Content-Type': 'application/json' },
-			})
-			const data = await res.json()
-			setFunds(data)
-		})();
-	}, [])
+	const [open, setOpen] = React.useState(false);
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
@@ -60,23 +55,17 @@ export function NewContributionForm() {
 	})
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
-		const response = await fetch('/api/contributions', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(data)
-		})
-		if (response.ok) {
-			const contribution = await response.json()
+		mutate(JSON.stringify(data)).then((contribution) => {
 			toast.success("Successfully made a contribution", {
 				description: `You've successfully made a contribution of: ${contribution.amount}`,
 			})
 			form.reset()
 			setOpen(false)
-		} else {
+		}).catch(() => {
 			toast.error("Failed to make contribution", {
 				description: "An error occurred while making your contribution.",
 			})
-		}
+		})
 	}
 
 	return (
@@ -111,7 +100,7 @@ export function NewContributionForm() {
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												{funds.map(fund => (
+												{funds?.map(fund => (
 													<SelectItem key={fund.id} value={fund.id}>{fund.name}</SelectItem>
 												))}
 											</SelectContent>
