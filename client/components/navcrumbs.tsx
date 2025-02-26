@@ -8,14 +8,25 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage
 } from "@/components/ui/breadcrumb";
+import { useFund } from "@/hooks/use-funds";
 import { usePathname } from "next/navigation";
 import React, { JSX } from "react";
 
-async function fetchFund(fundId: string) {
-  const res = await fetch(`/api/funds/${fundId}`, {
-    headers: { 'Content-Type': 'application/json' },
-  })
-  return res.json()
+function Crumb({ fundId, path, isLast }: { fundId: string, path: string, isLast: boolean }) {
+  const { data: fund } = useFund({ id: fundId });
+  return (
+    <React.Fragment>
+      <BreadcrumbSeparator className="hidden md:block" />
+      <BreadcrumbItem>
+        {isLast ? (
+          <BreadcrumbPage>{fund?.name}</BreadcrumbPage>
+        ) : (
+          <BreadcrumbLink href={path}>{fund?.name}</BreadcrumbLink>
+        )}
+      </BreadcrumbItem>
+      {!isLast && <BreadcrumbSeparator />}
+    </React.Fragment>
+  );
 }
 
 export default function Navcrumbs() {
@@ -40,21 +51,12 @@ export default function Navcrumbs() {
 
       const items = await Promise.all(
         pairs.map(async (pair, index) => {
-          const fund = await fetchFund(pair[1]);
-          const isLast = index === pairs.length - 1;
-          return (
-            <React.Fragment key={pair[1]}>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                {isLast ? (
-                  <BreadcrumbPage>{fund.name}</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink href={`/${pair.join("/")}`}>{fund.name}</BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-              {!isLast && <BreadcrumbSeparator />}
-            </React.Fragment>
-          );
+          return <Crumb
+            key={pair[1]}
+            fundId={pair[1]}
+            path={`/${pair.join("/")}`}
+            isLast={index === pairs.length - 1}
+          />
         })
       );
       setBreadcrumbs(items);

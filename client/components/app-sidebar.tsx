@@ -2,14 +2,9 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  Frame,
   GalleryVerticalEnd,
   HandCoins,
   Landmark,
-  Map,
-  PieChart,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -22,67 +17,41 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useAppUser } from "@/hooks/use-app-user"
 
-// This is sample data.
-const data = {
-  teams: [
-    {
-      name: "Community Funds",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "My Funds",
-      path: "/funds",
-      icon: HandCoins,
-      isActive: true,
-    },
-    {
-      title: "My Communities",
-      path: "/funds/contributed",
-      icon: Landmark,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+const teams = [
+  {
+    name: "Community Funds",
+    logo: GalleryVerticalEnd,
+    plan: "Enterprise",
+  },
+]
+
+const getMainNavMenu = (contributorId: string) => [
+  {
+    title: "My Funds",
+    path: "/funds",
+    icon: HandCoins,
+    isActive: true,
+  },
+  {
+    title: "My Communities",
+    path: "/funds",
+    params: { contributorId: contributorId },
+    icon: Landmark,
+  },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: user } = useAppUser()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
+        {user && <NavMain items={getMainNavMenu(user.id)} />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

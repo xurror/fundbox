@@ -44,6 +44,7 @@ func main() {
 			handlers.NewActuatorHandler,
 			handlers.NewContributionHandler,
 			handlers.NewFundHandler,
+			handlers.NewUserHandler,
 		),
 		fx.Provide(
 			routes.NewRouter, // Register routes

@@ -17,7 +17,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 // GetUserByAuth0ID finds a user by their Auth0 ID
 func (r *UserRepository) GetUserByAuth0ID(auth0ID string) (*models.User, error) {
 	var user models.User
-	err := r.db.Where("auth0_id = ?", auth0ID).First(&user).Error
+	err := r.db.Where(&models.User{Auth0ID: auth0ID}).First(&user).Error
 	return &user, err
 }
 
