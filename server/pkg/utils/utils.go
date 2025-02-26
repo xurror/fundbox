@@ -4,10 +4,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
+
+func GetFilePath(filename string) string {
+	envPath := filepath.Join(ProjectRoot(), filename)
+	return envPath
+}
 
 // findProjectRoot searches for the project's root directory by looking for a known marker file.
 func ProjectRoot() string {
@@ -31,12 +33,4 @@ func ProjectRoot() string {
 		dir = parent
 	}
 	return ""
-}
-
-func GetCurrentUserID(c *fiber.Ctx) *uuid.UUID {
-	id, ok := c.Context().UserValue("userID").(uuid.UUID)
-	if !ok {
-		return nil
-	}
-	return &id
 }

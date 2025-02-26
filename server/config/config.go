@@ -4,7 +4,6 @@ import (
 	"community-funds/pkg/utils"
 	"log"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -36,7 +35,7 @@ type Auth0Config struct {
 }
 
 func NewConfig() *Config {
-	envPath := envFilePath(".env")
+	envPath := utils.GetFilePath(".env")
 
 	// Load environment variables from that file, if present
 	if err := godotenv.Load(envPath); err != nil {
@@ -73,11 +72,6 @@ func (c *CorsConfig) ToServerCors() cors.Config {
 		AllowCredentials: c.AllowCredentials,
 		MaxAge:           c.MaxAge,
 	}
-}
-
-func envFilePath(filename string) string {
-	envPath := filepath.Join(utils.ProjectRoot(), filename)
-	return envPath
 }
 
 func getStringEnv(key, def string) string {

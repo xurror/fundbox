@@ -3,8 +3,10 @@ package server
 import (
 	"community-funds/api/routes"
 	"community-funds/config"
+	"community-funds/pkg/utils"
 	"context"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -35,10 +37,10 @@ func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server
 	app.Use(logger.New())
 	app.Use(cors.New(cfg.Cors.ToServerCors()))
 
-	// app.Use(swagger.New(swagger.Config{
-	// 	BasePath: "/swagger", // swagger ui base path
-	// 	FilePath: "./docs/swagger.json",
-	// }))
+	app.Use(swagger.New(swagger.Config{
+		BasePath: "/swagger", // swagger ui base path
+		FilePath: utils.GetFilePath("docs/swagger.json"),
+	}))
 
 	r.SetupRoutes(app) // Register routes
 
