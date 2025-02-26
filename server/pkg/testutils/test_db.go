@@ -12,6 +12,7 @@ import (
 	postgresContainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // TestDatabase holds test container information
@@ -39,7 +40,9 @@ func SetupTestDB(t *testing.T) *TestDatabase {
 	require.NoError(t, err, fmt.Sprintf("Failed to get connection string: %v", err))
 
 	// Connect to database
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	require.NoError(t, err, fmt.Sprintf("Failed to connect to test database: %v", err))
 
 	// Run migrations

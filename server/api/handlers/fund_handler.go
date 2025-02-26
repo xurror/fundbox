@@ -79,7 +79,7 @@ func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
 
 	if contributorID != nil {
 		// Fetch funds contributed to (excluding managed funds)
-		funds, err := h.service.GetContributedFunds(*contributorID)
+		funds, err := h.service.GetFundsByContributorID(*contributorID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).
 				JSON(fiber.Map{"error": "Failed to fetch contributed funds"})
@@ -93,7 +93,7 @@ func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
 	}
 
 	// Fetch funds managed by the user
-	funds, err := h.service.GetFundsManagedByUser(managerID)
+	funds, err := h.service.GetFundsByManagerID(managerID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch funds"})
 	}

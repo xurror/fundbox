@@ -94,7 +94,7 @@ func TestGetFundsManagedByUser(t *testing.T) {
 	}
 
 	// Get funds managed by user21
-	funds, err := fundService.GetFundsManagedByUser(&user1.ID)
+	funds, err := fundService.GetFundsByManagerID(&user1.ID)
 	require.NoError(t, err)
 	assert.Len(t, funds, 2)
 	for i, fund := range funds {
@@ -104,7 +104,7 @@ func TestGetFundsManagedByUser(t *testing.T) {
 	}
 
 	// Get funds managed by user2
-	funds, err = fundService.GetFundsManagedByUser(&user2.ID)
+	funds, err = fundService.GetFundsByManagerID(&user2.ID)
 	require.NoError(t, err)
 	assert.Len(t, funds, 1)
 	assert.Equal(t, "Fund 2", funds[0].Name)
@@ -140,13 +140,18 @@ func TestGetContributedFunds(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	contributorIdStr := contributor.ID.String()
+	t.Log(contributorIdStr)
+	fundManagerIdStr := fundManager.ID.String()
+	t.Log(fundManagerIdStr)
+
 	// Get funds contributed to by user1
-	contributedFunds, err := fundService.GetContributedFunds(fundManager.ID)
+	contributedFunds, err := fundService.GetFundsByContributorID(fundManager.ID)
 	require.NoError(t, err)
 	assert.Len(t, contributedFunds, 0)
 
 	// Get funds contributed to by user2
-	contributedFunds, err = fundService.GetContributedFunds(contributor.ID)
+	contributedFunds, err = fundService.GetFundsByContributorID(contributor.ID)
 	require.NoError(t, err)
 	assert.Len(t, contributedFunds, 2)
 }

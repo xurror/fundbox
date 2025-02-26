@@ -32,11 +32,11 @@ func (s *FundService) GetFund(fundID uuid.UUID) (*models.Fund, error) {
 }
 
 // GetFundsManagedByUser retrieves all funds managed by a user
-func (s *FundService) GetFundsManagedByUser(userID *uuid.UUID) ([]models.Fund, error) {
-	return s.fundRepo.GetFundsByManager(userID)
+func (s *FundService) GetFundsByManagerID(managerID *uuid.UUID) ([]models.Fund, error) {
+	return s.fundRepo.GetFundsByManagerID(managerID)
 }
 
 // GetContributedFunds retrieves all funds a user has contributed to but does not manage
-func (s *FundService) GetContributedFunds(userID uuid.UUID) ([]models.Fund, error) {
-	return s.fundRepo.GetContributedFunds(userID)
+func (s *FundService) GetFundsByContributorID(contributorID uuid.UUID) ([]models.Fund, error) {
+	return s.fundRepo.GetFundsByContributorID(contributorID)
 }
