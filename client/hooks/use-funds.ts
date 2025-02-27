@@ -13,13 +13,14 @@ export function useFunds(params?: { contributorId: string }) {
     isLoading,
   } = useSWR<Array<Fund>>(uri, fetcher)
 
-  const { trigger: mutate } = useSWRMutation(baseUri, mutator)
+  const { trigger: mutate, isMutating } = useSWRMutation(baseUri, mutator)
 
   return {
     data,
     error,
     isLoading,
-    mutate
+    mutate,
+    isMutating,
   }
 }
 

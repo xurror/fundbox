@@ -12,12 +12,13 @@ export function useContributions(params?: { fundId: string }) {
     isLoading,
   } = useSWR<Array<Contribution>>(uri, fetcher)
 
-  const { trigger: mutate } = useSWRMutation(baseUri, mutator)
+  const { trigger: mutate, isMutating } = useSWRMutation(baseUri, mutator)
 
   return {
     data,
     error,
     isLoading,
-    mutate
+    mutate,
+    isMutating,
   }
 }
