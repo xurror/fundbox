@@ -67,19 +67,15 @@ func (h *FundHandler) CreateFund(c *fiber.Ctx) error {
 // @Security BearerAuth
 // @Router /funds [get]
 func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
-	var contributorID *uuid.UUID
-	contributorIDStr := c.Query("contributorId")
-	if contributorIDStr != "" {
-		uuidVal, err := uuid.Parse(contributorIDStr)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid contributor ID"})
-		}
-		contributorID = &uuidVal
+	var query struct {
+		ContributorID *uuid.UUID `query:"contributorId"`
 	}
 
-	if contributorID != nil {
+	_ = c.QueryParser(&query)
+
+	if query.ContributorID != nil {
 		// Fetch funds contributed to (excluding managed funds)
-		funds, err := h.service.GetFundsByContributorID(*contributorID)
+		funds, err := h.service.GetFundsByContributorID(*query.ContributorID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).
 				JSON(fiber.Map{"error": "Failed to fetch contributed funds"})
@@ -113,12 +109,15 @@ func (h *FundHandler) GetFunds(c *fiber.Ctx) error {
 // @Security BearerAuth
 // @Router /funds [get]
 func (h *FundHandler) GetFund(c *fiber.Ctx) error {
-	fundID, err := uuid.Parse(c.Params("fundId"))
+	var params struct {
+		FundID uuid.UUID `params:"fundId"`
+	}
+	err := c.ParamsParser(&params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Fund not found"})
 	}
 
-	fund, err := h.service.GetFund(fundID)
+	fund, err := h.service.GetFund(params.FundID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch fund"})
 	}

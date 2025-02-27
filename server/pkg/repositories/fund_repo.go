@@ -35,6 +35,10 @@ func (r *FundRepository) GetFundsByManagerID(managerID *uuid.UUID) ([]models.Fun
 
 func (r *FundRepository) GetFundsByContributorID(contributorID uuid.UUID) ([]models.Fund, error) {
 	var funds []models.Fund
-	err := r.db.Raw("SELECT * FROM funds LEFT JOIN contributions ON funds.id = contributions.fund_id WHERE contributions.contributor_id = ?", contributorID).Scan(&funds).Error
+	err := r.db.Raw(`
+	 SELECT * FROM funds
+	 LEFT JOIN contributions ON funds.id = contributions.fund_id
+	 WHERE contributions.contributor_id = ?
+	`, contributorID).Scan(&funds).Error
 	return funds, err
 }

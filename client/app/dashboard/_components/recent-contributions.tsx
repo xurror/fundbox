@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/avatar"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { useContributions } from "@/hooks/use-contributions"
+import { formatAmount } from "@/lib/formatter"
 
 export function RecentContributions() {
   const { data: contributions } = useContributions()
@@ -30,7 +31,7 @@ export function RecentContributions() {
                 <p className="text-sm font-medium leading-none">{contribution.contributorName}</p>
                 <p className="text-sm text-muted-foreground">{contribution.fundName}</p>
               </div>
-              <div className="ml-auto font-medium">+${contribution.amount}</div>
+              <div className="ml-auto font-medium">+{formatAmount(contribution.amount)}</div>
             </div>
           ))}
         </div>
