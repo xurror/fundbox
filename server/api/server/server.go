@@ -5,9 +5,11 @@ import (
 	"community-funds/config"
 	"community-funds/pkg/utils"
 	"context"
+	"fmt"
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
+	fiberlog "github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -20,16 +22,23 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server {
+	// fiberlog.SetLogger(log)
+	fiberlog.SetLevel(fiberlog.Level(cfg.LogLevel))
 	app := fiber.New(fiber.Config{
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			code := fiber.StatusInternalServerError
-			if e, ok := err.(*fiber.Error); ok {
-				code = e.Code
+		AppName: "Community Funds",
+	})
+
+	app.Use(func(c *fiber.Ctx) error {
+		fmt.Printf("Request URL: %s\n", c.OriginalURL())
+		headerSize := 0
+		for key, values := range c.GetReqHeaders() {
+			for _, value := range values {
+				headerSize += len(key) + len(value)
 			}
-			return c.Status(code).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		},
+		}
+
+		fmt.Printf("Request header size: %d bytes\n", headerSize)
+		return c.Next()
 	})
 
 	// Middleware

@@ -15,7 +15,7 @@ RUN go mod tidy
 COPY . .
 
 # Build the binary
-RUN go build -o community-funds ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o community-funds ./cmd/server/main.go
 
 # ---- DEPLOYMENT STAGE ----
 FROM alpine:latest
@@ -23,7 +23,7 @@ FROM alpine:latest
 # Install CA certificates
 RUN apk --no-cache add ca-certificates
 
-ENV PROJECT_ROOT_DIR /root/
+ENV PROJECT_ROOT_DIR=/root/
 
 # Set working directory
 WORKDIR $PROJECT_ROOT_DIR
