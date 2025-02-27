@@ -16,7 +16,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith("/api")) {
+    console.log("API Path", request.nextUrl.pathname)
     const accessToken = await auth0.getAccessToken(request, authRes)
+    console.log("accessToken", accessToken)
     return NextResponse.next({
       headers: {
         "Authorization": `Bearer ${accessToken.token}`
