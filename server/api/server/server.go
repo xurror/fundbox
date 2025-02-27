@@ -25,7 +25,9 @@ func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server
 	// fiberlog.SetLogger(log)
 	fiberlog.SetLevel(fiberlog.Level(cfg.LogLevel))
 	app := fiber.New(fiber.Config{
-		AppName: "Community Funds",
+		AppName:         "Community Funds",
+		ReadBufferSize:  8192,
+		WriteBufferSize: 8192,
 	})
 
 	app.Use(func(c *fiber.Ctx) error {
@@ -33,6 +35,7 @@ func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server
 		headerSize := 0
 		for key, values := range c.GetReqHeaders() {
 			for _, value := range values {
+				fmt.Printf("Request Header Key: %s\n", key)
 				headerSize += len(key) + len(value)
 			}
 		}
