@@ -16,7 +16,7 @@ const transformData = (rawData: Array<Contribution>) => {
     total: 0,
   }));
 
-  rawData.forEach((entry) => {
+  (rawData ?? []).forEach((entry) => {
     const date = new Date(entry.createdAt);
     const monthIndex = date.getMonth();
     transformed[monthIndex].total += entry.amount;
@@ -27,6 +27,7 @@ const transformData = (rawData: Array<Contribution>) => {
 
 export function ContributionsOverview() {
   const { data } = useContributions()
+  console.log("Contributions", data)
   return (
     <Card className="col-span-4">
       <CardHeader>
