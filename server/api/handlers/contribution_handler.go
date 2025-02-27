@@ -62,32 +62,40 @@ func (h *ContributionHandler) CreateContribution(c *fiber.Ctx) error {
 // @Security BearerAuth
 // @Router /contributions [get]
 func (h *ContributionHandler) GetContributions(c *fiber.Ctx) error {
-	var fundID *uuid.UUID
-	fundIDStr := c.Query("fundId")
-	if fundIDStr != "" {
-		uuidVal, err := uuid.Parse(fundIDStr)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid fund ID"})
-		}
-		fundID = &uuidVal
+	var query struct {
+		FundID        *uuid.UUID `query:"fundId"`
+		ContributorID *uuid.UUID `query:"contributorId"`
 	}
 
-	if fundID != nil {
-		contributions, err := h.service.GetContributionsByFund(*fundID)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
-		}
-		return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
-	} else {
-		contributorID := utils.GetCurrentUserID(c)
-		if contributorID == nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing contributor ID"})
-		}
-		contributions, err := h.service.GetContributionsByContributor(*contributorID)
+	_ = c.QueryParser(&query)
+
+	if query.FundID != nil {
+		contributions, err := h.service.GetContributionsByFund(*query.FundID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
 		}
 
 		return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
 	}
+
+	if query.ContributorID != nil {
+		contributions, err := h.service.GetContributionsByContributor(*query.ContributorID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
+	}
+
+	userID := utils.GetCurrentUserID(c)
+	if userID == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	contributions, err := h.service.GetManagedAndContributedContributions(*userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contributions"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.MapContributionsToDTOs(contributions))
+
 }

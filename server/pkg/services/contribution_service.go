@@ -42,3 +42,7 @@ func (s *ContributionService) GetContributionsByContributor(contributorID uuid.U
 	}
 	return contributions, nil
 }
+
+func (s *ContributionService) GetManagedAndContributedContributions(userID uuid.UUID) ([]models.Contribution, error) {
+	return s.repo.GetFundsByContributorIDOrManageID(userID)
+}

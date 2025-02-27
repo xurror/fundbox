@@ -15,7 +15,6 @@ func NewFundService(fundRepo *repositories.FundRepository) *FundService {
 	return &FundService{fundRepo}
 }
 
-// CreateFund associates a fund with a user (making them a fund manager)
 func (s *FundService) CreateFund(name string, managerID uuid.UUID, targetAmount float64) (*models.Fund, error) {
 	fund := &models.Fund{
 		Name:         name,
@@ -26,17 +25,14 @@ func (s *FundService) CreateFund(name string, managerID uuid.UUID, targetAmount 
 	return fund, err
 }
 
-// GetFundsManagedByUser retrieves all funds managed by a user
 func (s *FundService) GetFund(fundID uuid.UUID) (*models.Fund, error) {
 	return s.fundRepo.GetFundByID(fundID)
 }
 
-// GetFundsManagedByUser retrieves all funds managed by a user
 func (s *FundService) GetFundsByManagerID(managerID *uuid.UUID) ([]models.Fund, error) {
 	return s.fundRepo.GetFundsByManagerID(managerID)
 }
 
-// GetContributedFunds retrieves all funds a user has contributed to but does not manage
 func (s *FundService) GetFundsByContributorID(contributorID uuid.UUID) ([]models.Fund, error) {
 	return s.fundRepo.GetFundsByContributorID(contributorID)
 }

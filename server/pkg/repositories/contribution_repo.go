@@ -38,3 +38,20 @@ func (r *ContributionRepository) GetContributionsByContributor(contributorID uui
 		Find(&contributions).Error
 	return contributions, err
 }
+
+func (r *ContributionRepository) GetFundsByContributorIDOrManageID(userID uuid.UUID) ([]models.Contribution, error) {
+	var contributions []models.Contribution
+	err := r.db.
+		Preload("Contributor").
+		Preload("Fund").
+		Where(&models.Contribution{
+			ContributorID: &userID,
+		}).
+		Or(&models.Contribution{
+			Fund: models.Fund{
+				ManagerID: userID,
+			},
+		}).
+		Find(&contributions).Error
+	return contributions, err
+}

@@ -23,11 +23,14 @@ FROM alpine:latest
 # Install CA certificates
 RUN apk --no-cache add ca-certificates
 
+ENV PROJECT_ROOT_DIR /root/
+
 # Set working directory
-WORKDIR /root/
+WORKDIR $PROJECT_ROOT_DIR
 
 # Copy built binary from builder stage
 COPY --from=builder /app/community-funds .
+COPY --from=builder /app/docs docs
 
 # Expose API port
 EXPOSE 8080

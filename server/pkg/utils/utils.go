@@ -6,13 +6,33 @@ import (
 	"path/filepath"
 )
 
+func logDirContents(dirPath string) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		log.Println("Error reading directory:", err)
+	}
+
+	log.Println("Directory contents:")
+	for _, entry := range entries {
+		log.Println(entry.Name()) // Prints file/directory names
+	}
+}
+
 func GetFilePath(filename string) string {
-	envPath := filepath.Join(ProjectRoot(), filename)
+	projectRoot := ProjectRoot()
+	// logDirContents(projectRoot)
+
+	envPath := filepath.Join(projectRoot, filename)
 	return envPath
 }
 
 // findProjectRoot searches for the project's root directory by looking for a known marker file.
 func ProjectRoot() string {
+	projectRoot := os.Getenv("PROJECT_ROOT_DIR")
+	if projectRoot != "" {
+		return projectRoot
+	}
+
 	// Start from the current working directory
 	dir, err := os.Getwd()
 	if err != nil {

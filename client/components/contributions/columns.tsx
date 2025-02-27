@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu"
+import { formatAmount, formatDate } from "@/lib/formatter"
 import { Contribution } from "@/types/contribution"
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
@@ -47,16 +48,19 @@ export const columns: ColumnDef<Contribution>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Contributor Name" />,
   },
   {
+    accessorKey: "createdAt",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Contributed On" />,
+    cell: ({ row }) => {
+      return <div>{formatDate(row.getValue("createdAt"))}</div>
+    },
+  },
+  {
     accessorKey: "amount",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" className="justify-end" />,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
+      return <div className="text-right font-medium">
+        {formatAmount(row.getValue("amount"))}
+      </div>
     },
   },
   {
@@ -65,25 +69,25 @@ export const columns: ColumnDef<Contribution>[] = [
       const payment = row.original
       return (
         <div className="size-2 shrink-0">
-         <DropdownMenu>
-           <DropdownMenuTrigger asChild>
-             <Button variant="ghost" className="size-4">
-               <span className="sr-only">Open menu</span>
-               <MoreHorizontal className="size-4 shrink-0" />
-             </Button>
-           </DropdownMenuTrigger>
-           <DropdownMenuContent align="end">
-             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-             <DropdownMenuItem
-               onClick={() => navigator.clipboard.writeText(payment.id)}
-             >
-               Copy payment ID
-             </DropdownMenuItem>
-             <DropdownMenuSeparator />
-             <DropdownMenuItem>View customer</DropdownMenuItem>
-             <DropdownMenuItem>View payment details</DropdownMenuItem>
-           </DropdownMenuContent>
-         </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="size-4">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="size-4 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(payment.id)}
+              >
+                Copy payment ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <DropdownMenuItem>View payment details</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )
     },
