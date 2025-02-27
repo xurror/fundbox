@@ -5,11 +5,11 @@
  * @returns The parsed JSON response
  * @throws FetchError with status, info, and message when the server returns an error
  */
-export class FetchError extends Error {
+export class FetchError<T> extends Error {
   status: number;
-  info: any;
+  info: T;
   
-  constructor(message: string, status: number, info: any) {
+  constructor(message: string, status: number, info: T) {
     super(message);
     this.name = 'FetchError';
     this.status = status;
@@ -17,7 +17,7 @@ export class FetchError extends Error {
   }
 }
 
-export const fetcher = async <T = any>(
+export const fetcher = async <T>(
   url: string, 
   init?: RequestInit
 ): Promise<T> => {
@@ -36,6 +36,7 @@ export const fetcher = async <T = any>(
     try {
       errorInfo = await response.json();
     } catch (e) {
+      console.error('Failed to parse error response:', e);
       // If parsing fails, use a simple error message
       errorInfo = { message: 'An error occurred while fetching the data.' };
     }

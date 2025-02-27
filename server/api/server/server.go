@@ -5,7 +5,6 @@ import (
 	"community-funds/config"
 	"community-funds/pkg/utils"
 	"context"
-	"fmt"
 
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
@@ -30,19 +29,19 @@ func NewServer(cfg *config.Config, r *routes.Router, log *logrus.Logger) *Server
 		WriteBufferSize: 8192,
 	})
 
-	app.Use(func(c *fiber.Ctx) error {
-		fmt.Printf("Request URL: %s\n", c.OriginalURL())
-		headerSize := 0
-		for key, values := range c.GetReqHeaders() {
-			for _, value := range values {
-				fmt.Printf("Request Header Key: %s\n", key)
-				headerSize += len(key) + len(value)
-			}
-		}
+	// app.Use(func(c *fiber.Ctx) error {
+	// 	fmt.Printf("Request URL: %s\n", c.OriginalURL())
+	// 	headerSize := 0
+	// 	for key, values := range c.GetReqHeaders() {
+	// 		for _, value := range values {
+	// 			fmt.Printf("Request Header Key: %s\n", key)
+	// 			headerSize += len(key) + len(value)
+	// 		}
+	// 	}
 
-		fmt.Printf("Request header size: %d bytes\n", headerSize)
-		return c.Next()
-	})
+	// 	fmt.Printf("Request header size: %d bytes\n", headerSize)
+	// 	return c.Next()
+	// })
 
 	// Middleware
 	app.Use(recover.New())
