@@ -6,7 +6,6 @@ import { Contribution } from "@/types/contribution";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 
 const transformData = (rawData: Array<Contribution>) => {
-  console.log("Raw Data", rawData)
   const months = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -28,7 +27,6 @@ const transformData = (rawData: Array<Contribution>) => {
 
 export function ContributionsOverview() {
   const { data } = useContributions()
-  console.log("Contributions", data)
   return (
     <Card className="col-span-4">
       <CardHeader>

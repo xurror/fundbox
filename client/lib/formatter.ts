@@ -8,7 +8,6 @@ export const formatAmount = (amount: string | number) => {
 
 // 2025-02-21T19:41:54.174548+01:00
 export const formatDate = (date: string) => {
-  console.log(date)
   const dateObj = new Date(date)
   return dateObj.toLocaleDateString("en-US", {
     year: "numeric",
