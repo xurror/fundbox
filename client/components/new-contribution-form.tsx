@@ -30,6 +30,7 @@ import React from "react"
 import { useParams } from "next/navigation"
 import { useFunds } from "@/hooks/use-funds"
 import { useContributions } from "@/hooks/use-contributions"
+import { Contribution } from "@/types/contribution"
 
 
 const FormSchema = z.object({
@@ -57,7 +58,7 @@ export function NewContributionForm() {
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		mutate(JSON.stringify(data)).then((contribution) => {
 			toast.success("Successfully made a contribution", {
-				description: `You've successfully made a contribution of: ${contribution.amount}`,
+				description: `You've successfully made a contribution of: ${(contribution as Contribution).amount}`,
 			})
 			form.reset()
 			setOpen(false)

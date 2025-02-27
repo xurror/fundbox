@@ -1,3 +1,5 @@
+import { getAccessToken } from "@auth0/nextjs-auth0";
+
 /**
  * Custom fetcher for SWR that properly handles HTTP error responses
  * @param url - The URL to fetch
@@ -21,10 +23,12 @@ export const fetcher = async <T>(
   url: string, 
   init?: RequestInit
 ): Promise<T> => {
+  const accessToken = await getAccessToken();
   const response = await fetch(url, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      "Authorization": `Bearer ${accessToken}`,
       ...init?.headers,
     },
   });
@@ -60,9 +64,8 @@ export const mapQueryParams = (params: { [key: string]: string }) => {
 }
 
 export const mutator = async (url: string, { arg }: { arg: string }) => {
-  return fetch(url, {
+  return fetcher(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: arg
-  }).then(res => res.json())
+  });
 }

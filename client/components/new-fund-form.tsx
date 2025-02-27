@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import React from "react"
 import { useFunds } from "@/hooks/use-funds"
+import { Fund } from "@/types/fund"
 
 const FormSchema = z.object({
 	name: z.string().min(2, {
@@ -53,7 +54,7 @@ export function NewFundForm() {
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		mutate(JSON.stringify(data)).then((fund) => {
 			toast.success("Successfully created fund", {
-				description: `You've successfully created fund: ${fund.name}`,
+				description: `You've successfully created fund: ${(fund as Fund).name}`,
 			})
 			form.reset()
 			setOpen(false)
