@@ -1,6 +1,7 @@
 package services
 
 import (
+	"community-funds/config"
 	"community-funds/pkg/models"
 	"community-funds/pkg/repositories"
 	"community-funds/pkg/testutils"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,10 +25,18 @@ func createTestUser(t *testing.T, testDB *testutils.TestDatabase, number int) mo
 	return user
 }
 
-func TestCreateFund(t *testing.T) {
-	testDB := testutils.SetupTestDB(t)
+func initTest(t *testing.T) (testDB *testutils.TestDatabase, fundService *FundService) {
+	testDB = testutils.SetupTestDB(t)
 	fundRepo := repositories.NewFundRepository(testDB.DB)
-	fundService := NewFundService(fundRepo)
+	fundService = NewFundService(
+		fundRepo,
+		NewStripeService(logrus.New(), &config.Config{}),
+	)
+	return testDB, fundService
+}
+
+func TestCreateFund(t *testing.T) {
+	testDB, fundService := initTest(t)
 
 	// Create test user
 	user := createTestUser(t, testDB, 1)
@@ -45,10 +55,7 @@ func TestCreateFund(t *testing.T) {
 }
 
 func TestGetFund(t *testing.T) {
-	testDB := testutils.SetupTestDB(t)
-
-	fundRepo := repositories.NewFundRepository(testDB.DB)
-	fundService := NewFundService(fundRepo)
+	testDB, fundService := initTest(t)
 
 	// Create test user
 	user := createTestUser(t, testDB, 1)
@@ -67,10 +74,7 @@ func TestGetFund(t *testing.T) {
 }
 
 func TestGetFundsManagedByUser(t *testing.T) {
-	testDB := testutils.SetupTestDB(t)
-
-	fundRepo := repositories.NewFundRepository(testDB.DB)
-	fundService := NewFundService(fundRepo)
+	testDB, fundService := initTest(t)
 
 	// Create test user
 	user1 := createTestUser(t, testDB, 1)
@@ -113,10 +117,7 @@ func TestGetFundsManagedByUser(t *testing.T) {
 }
 
 func TestGetContributedFunds(t *testing.T) {
-	testDB := testutils.SetupTestDB(t)
-
-	fundRepo := repositories.NewFundRepository(testDB.DB)
-	fundService := NewFundService(fundRepo)
+	testDB, fundService := initTest(t)
 	contributionService := NewContributionService(repositories.NewContributionRepository(testDB.DB))
 
 	// Create test users

@@ -16,6 +16,7 @@ type Router struct {
 	actuatorHandler     *handlers.ActuatorHandler
 	userRepo            *repositories.UserRepository
 	fundHandler         *handlers.FundHandler
+	stripeHandler       *handlers.StripeHandler
 	userHandler         *handlers.UserHandler
 	contributionHandler *handlers.ContributionHandler
 }
@@ -26,6 +27,7 @@ func NewRouter(
 	actuatorHandler *handlers.ActuatorHandler,
 	contributionHandler *handlers.ContributionHandler,
 	fundHandler *handlers.FundHandler,
+	stripeHandler *handlers.StripeHandler,
 	userHandler *handlers.UserHandler,
 	userRepo *repositories.UserRepository,
 ) *Router {
@@ -35,6 +37,7 @@ func NewRouter(
 		actuatorHandler:     actuatorHandler,
 		contributionHandler: contributionHandler,
 		fundHandler:         fundHandler,
+		stripeHandler:       stripeHandler,
 		userHandler:         userHandler,
 		userRepo:            userRepo,
 	}
@@ -64,6 +67,15 @@ func (r *Router) SetupRoutes(router *fiber.App) {
 		{
 			contributions.Get("", r.contributionHandler.GetContributions)
 			contributions.Post("", r.contributionHandler.CreateContribution)
+		}
+
+		stripe := api.Group("/stripe")
+		{
+			stripe.Post("account", r.stripeHandler.CreateAccount)
+			stripe.Post("account-link", r.stripeHandler.CreateAccountLink)
+			stripe.Post("account-session", r.stripeHandler.CreateAccountSession)
+
+			stripe.Post("checkout-session", r.stripeHandler.CreateCheckoutSession)
 		}
 
 		users := api.Group("/users")

@@ -8,20 +8,30 @@ import (
 )
 
 type FundService struct {
-	fundRepo *repositories.FundRepository
+	stripeService *StripeService
+	fundRepo      *repositories.FundRepository
 }
 
-func NewFundService(fundRepo *repositories.FundRepository) *FundService {
-	return &FundService{fundRepo}
+func NewFundService(fundRepo *repositories.FundRepository, stripeService *StripeService) *FundService {
+	return &FundService{
+		fundRepo:      fundRepo,
+		stripeService: stripeService,
+	}
 }
 
 func (s *FundService) CreateFund(name string, managerID uuid.UUID, targetAmount float64) (*models.Fund, error) {
-	fund := &models.Fund{
-		Name:         name,
-		ManagerID:    managerID,
-		TargetAmount: targetAmount,
+	accountID, err := s.stripeService.CreateAccount()
+	if err != nil {
+		return nil, err
 	}
-	err := s.fundRepo.CreateFund(fund)
+
+	fund := &models.Fund{
+		Name:                     name,
+		ManagerID:                managerID,
+		TargetAmount:             targetAmount,
+		StripeConnectedAccountId: *accountID,
+	}
+	err = s.fundRepo.CreateFund(fund)
 	return fund, err
 }
 

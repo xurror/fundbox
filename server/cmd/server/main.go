@@ -38,12 +38,14 @@ func main() {
 		fx.Provide(
 			services.NewContributionService,
 			services.NewFundService,
+			services.NewStripeService,
 			services.NewUserService,
 		),
 		fx.Provide(
 			handlers.NewActuatorHandler,
 			handlers.NewContributionHandler,
 			handlers.NewFundHandler,
+			handlers.NewStripeHandler,
 			handlers.NewUserHandler,
 		),
 		fx.Provide(

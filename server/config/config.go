@@ -12,12 +12,12 @@ import (
 )
 
 type Config struct {
-	AllowOrigins string
-	Port         string
-	DatabaseDSN  string
-	LogLevel     uint64
-	Auth0        *Auth0Config
-	Cors         *CorsConfig
+	StripeKey   string
+	Port        string
+	DatabaseDSN string
+	LogLevel    uint64
+	Auth0       *Auth0Config
+	Cors        *CorsConfig
 }
 
 type CorsConfig struct {
@@ -45,6 +45,7 @@ func NewConfig() *Config {
 
 	// Read each setting or use a default if not set.
 	return &Config{
+		StripeKey:   getStringEnv("STRIPE_KEY", ""),
 		Port:        getStringEnv("PORT", "8080"),
 		LogLevel:    getUintEnv("LOG_LEVEL", 1),
 		DatabaseDSN: getStringEnv("DATABASE_DSN", "postgres://psqluser:password@localhost:5432/community_funds?sslmode=disable"),

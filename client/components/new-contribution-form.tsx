@@ -31,6 +31,9 @@ import { useParams } from "next/navigation"
 import { useFunds } from "@/hooks/use-funds"
 import { useContributions } from "@/hooks/use-contributions"
 import { Contribution } from "@/types/contribution"
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js"
+import { loadStripe } from "@stripe/stripe-js"
+import { fetcher } from "@/lib/api"
 
 
 const FormSchema = z.object({
@@ -42,10 +45,20 @@ const FormSchema = z.object({
 
 export function NewContributionForm() {
 	const { fundId } = useParams()
+	const [stripeClientSecret, setStripeClientSecret] = React.useState<string | null>(null)
 	const { data: funds } = useFunds()
 	const { mutate } = useContributions()
 
 	const [open, setOpen] = React.useState(false);
+
+	React.useEffect(() => {
+		fetcher<{ clientSecret: string }>("/api/stripe/checkout-session", {
+			method: "POST",
+			body: JSON.stringify({ account: "acct_1Qx7X8QOnFleJR7j" }),
+		}).then((json) => {
+			setStripeClientSecret(json.clientSecret)
+		})
+	}, [])
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
@@ -83,7 +96,16 @@ export function NewContributionForm() {
 						Let&apos;s make your contribution count.
 					</DialogDescription>
 				</DialogHeader>
-
+				{stripeClientSecret ?? (
+					<EmbeddedCheckoutProvider
+						stripe={loadStripe('STRIPE_PK', {
+							stripeAccount: "STRIPE_ACCOUNT_KEY",
+						})}
+						options={{ clientSecret: stripeClientSecret }}
+					>
+						<EmbeddedCheckout />
+					</EmbeddedCheckoutProvider>
+				)}
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)}>
 						<div className="grid gap-4 py-4">

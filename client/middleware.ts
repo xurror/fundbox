@@ -2,21 +2,32 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { auth0 } from "./lib/auth0"
 
+// 1. Specify protected and public routes
+const protectedRoutes = ['/dashboard', '/api']
+const publicRoutes = ['/login', '/signup', '/']
+ 
 export async function middleware(request: NextRequest) {
+
+  const path = request.nextUrl.pathname
+  const isProtectedRoute = protectedRoutes.includes(path)
+  const isPublicRoute = publicRoutes.includes(path)
+  const isAuthRoute = path.startsWith('/auth')
+  const isApiRoute = path.startsWith('/api')
+
   const authRes = await auth0.middleware(request)
 
-  if (request.nextUrl.pathname.startsWith("/auth")) {
+  if (isAuthRoute || isPublicRoute) {
+    // skip auth for auth routes and public routes
     return authRes
   }
 
   const session = await auth0.getSession(request)
-  if (!session) {
+  if (isProtectedRoute && !session) {
     // user is not authenticated, redirect to login page
     return NextResponse.redirect(new URL("/auth/login", request.nextUrl.origin))
   }
 
-  if (request.nextUrl.pathname.startsWith("/api")) {
-    // keep api requests lean
+  if (isApiRoute) {
     return NextResponse.next()
   }
 
