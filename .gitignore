@@ -2,3 +2,6 @@ __debug_bin*
 .DS_Store
 .vscode
 getting-to-go.md
+
+.env*
+
